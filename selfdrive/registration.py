@@ -1,14 +1,16 @@
-import os
 import json
 import subprocess
 
 from selfdrive.swaglog import cloudlog
-from selfdrive.version import version
+from selfdrive.version import version, training_version
 from common.api import api_get
 from common.params import Params
 
 def get_imei():
-  return subprocess.check_output(["getprop", "oem.device.imeicache"]).strip()
+  ret = subprocess.check_output(["getprop", "oem.device.imeicache"]).strip()
+  if ret == "":
+    ret = "000000000000000"
+  return ret
 
 def get_serial():
   return subprocess.check_output(["getprop", "ro.serialno"]).strip()
@@ -25,6 +27,7 @@ def get_git_remote():
 def register():
   params = Params()
   params.put("Version", version)
+  params.put("TrainingVersion", training_version)
   params.put("GitCommit", get_git_commit())
   params.put("GitBranch", get_git_branch())
   params.put("GitRemote", get_git_remote())
@@ -47,5 +50,5 @@ def register():
     return None
 
 if __name__ == "__main__":
-  print api_get("").text
-  print register()
+  print(api_get("").text)
+  print(register())

@@ -1,94 +1,26 @@
-import os
-from cereal import car
-
-from common.realtime import sec_since_boot
-from common.fingerprints import eliminate_incompatible_cars, all_known_cars
-
-from selfdrive.swaglog import cloudlog
-import selfdrive.messaging as messaging
-from selfdrive.car.honda.interface import CarInterface as HondaInterface
-from selfdrive.car.toyota.interface import CarInterface as ToyotaInterface
-from selfdrive.car.mock.interface import CarInterface as MockInterface
-
-try:
-  from .simulator.interface import CarInterface as SimInterface
-except ImportError:
-  SimInterface = None
-
-try:
-  from .simulator2.interface import CarInterface as Sim2Interface
-except ImportError:
-  Sim2Interface = None
+# functions common among cars
+from common.numpy_fast import clip
 
 
-interfaces = {
-  "HONDA CIVIC 2016 TOURING": HondaInterface,
-  "ACURA ILX 2016 ACURAWATCH PLUS": HondaInterface,
-  "HONDA ACCORD 2016 TOURING": HondaInterface,
-  "HONDA CR-V 2016 TOURING": HondaInterface,
-  "TOYOTA PRIUS 2017": ToyotaInterface,
-  "TOYOTA RAV4 2017": ToyotaInterface,
-  "TOYOTA RAV4 2017 HYBRID": ToyotaInterface,
-
-  "simulator": SimInterface,
-  "simulator2": Sim2Interface,
-
-  "mock": MockInterface
-}
-
-# **** for use live only ****
-def fingerprint(logcan, timeout):
-  if os.getenv("SIMULATOR") is not None or logcan is None:
-    return ("simulator", None)
-  elif os.getenv("SIMULATOR2") is not None:
-    return ("simulator2", None)
-
-  finger_st = sec_since_boot()
-
-  cloudlog.warning("waiting for fingerprint...")
-  candidate_cars = all_known_cars()
-  finger = {}
-  st = None
-  while 1:
-    for a in messaging.drain_sock(logcan, wait_for_one=True):
-      if st is None:
-        st = sec_since_boot()
-      for can in a.can:
-        if can.src == 0:
-          finger[can.address] = len(can.dat)
-        candidate_cars = eliminate_incompatible_cars(can, candidate_cars)
-
-    ts = sec_since_boot()
-    # if we only have one car choice and the time_fingerprint since we got our first 
-    # message has elapsed, exit. Toyota needs higher time_fingerprint, since DSU does not
-    # broadcast immediately
-    if len(candidate_cars) == 1 and st is not None:
-      time_fingerprint = 1.0 if "TOYOTA" in candidate_cars[0] else 0.1
-      if (ts-st) > time_fingerprint:
-        break
-
-    # bail if no cars left or we've been waiting too long
-    elif len(candidate_cars) == 0 or (timeout and ts-finger_st > timeout):
-      return None, finger
-
-  cloudlog.warning("fingerprinted %s", candidate_cars[0])
-  return (candidate_cars[0], finger)
+def dbc_dict(pt_dbc, radar_dbc, chassis_dbc=None):
+  return {'pt': pt_dbc, 'radar': radar_dbc, 'chassis': chassis_dbc}
 
 
-def get_car(logcan, sendcan=None, passive=True):
+def apply_std_steer_torque_limits(apply_torque, apply_torque_last, driver_torque, LIMITS):
 
-  # TODO: timeout only useful for replays so controlsd can start before unlogger
-  timeout = 1. if passive else None
-  candidate, fingerprints = fingerprint(logcan, timeout)
+  # limits due to driver torque
+  driver_max_torque = LIMITS.STEER_MAX + (LIMITS.STEER_DRIVER_ALLOWANCE + driver_torque * LIMITS.STEER_DRIVER_FACTOR) * LIMITS.STEER_DRIVER_MULTIPLIER
+  driver_min_torque = -LIMITS.STEER_MAX + (-LIMITS.STEER_DRIVER_ALLOWANCE + driver_torque * LIMITS.STEER_DRIVER_FACTOR) * LIMITS.STEER_DRIVER_MULTIPLIER
+  max_steer_allowed = max(min(LIMITS.STEER_MAX, driver_max_torque), 0)
+  min_steer_allowed = min(max(-LIMITS.STEER_MAX, driver_min_torque), 0)
+  apply_torque = clip(apply_torque, min_steer_allowed, max_steer_allowed)
 
-  if candidate is None:
-    cloudlog.warning("car doesn't match any fingerprints: %r", fingerprints)
-    if passive:
-      candidate = "mock"
-    else:
-      return None, None
+  # slow rate if steer torque increases in magnitude
+  if apply_torque_last > 0:
+    apply_torque = clip(apply_torque, max(apply_torque_last - LIMITS.STEER_DELTA_DOWN, -LIMITS.STEER_DELTA_UP),
+                                    apply_torque_last + LIMITS.STEER_DELTA_UP)
+  else:
+    apply_torque = clip(apply_torque, apply_torque_last - LIMITS.STEER_DELTA_UP,
+                                    min(apply_torque_last + LIMITS.STEER_DELTA_DOWN, LIMITS.STEER_DELTA_UP))
 
-  interface_cls = interfaces[candidate]
-  params = interface_cls.get_params(candidate, fingerprints)
-
-  return interface_cls(params, sendcan), params
+  return int(round(apply_torque))

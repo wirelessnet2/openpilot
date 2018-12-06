@@ -9,7 +9,8 @@ import shutil
 import matplotlib
 matplotlib.use('svg')
 
-from selfdrive.config import Conversions as CV, CruiseButtons as CB
+from selfdrive.config import Conversions as CV
+from selfdrive.car.honda.values import CruiseButtons as CB
 from selfdrive.test.plant.maneuver import Maneuver
 import selfdrive.manager as manager
 from common.params import Params
@@ -92,6 +93,16 @@ maneuvers = [
     initial_distance_lead=35.,
     speed_lead_values = [20., 20., 0.],
     speed_lead_breakpoints = [0., 15., 25.0],
+    cruise_button_presses = [(CB.DECEL_SET, 1.2), (0, 1.3)]
+  ),
+  Maneuver(
+    'steady state following a car at 20m/s, then lead decel to 0mph at 3m/s^2',
+    duration=50.,
+    initial_speed = 20.,
+    lead_relevancy=True,
+    initial_distance_lead=35.,
+    speed_lead_values = [20., 20., 0.],
+    speed_lead_breakpoints = [0., 15., 21.66],
     cruise_button_presses = [(CB.DECEL_SET, 1.2), (0, 1.3)]
   ),
   Maneuver(

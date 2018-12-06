@@ -8,7 +8,11 @@ namespace {
 const Signal sigs_{{address}}[] = {
   {% for sig in sigs %}
     {
-      {% set b1 = (sig.start_bit//8)*8  + (-sig.start_bit-1) % 8 %}
+      {% if sig.is_little_endian %}
+        {% set b1 = sig.start_bit %}
+      {% else %}
+        {% set b1 = (sig.start_bit//8)*8  + (-sig.start_bit-1) % 8 %}
+      {% endif %}
       .name = "{{sig.name}}",
       .b1 = {{b1}},
       .b2 = {{sig.size}},
@@ -16,6 +20,7 @@ const Signal sigs_{{address}}[] = {
       .is_signed = {{"true" if sig.is_signed else "false"}},
       .factor = {{sig.factor}},
       .offset = {{sig.offset}},
+      .is_little_endian = {{"true" if sig.is_little_endian else "false"}},
       {% if checksum_type == "honda" and sig.name == "CHECKSUM" %}
       .type = SignalType::HONDA_CHECKSUM,
       {% elif checksum_type == "honda" and sig.name == "COUNTER" %}
@@ -43,12 +48,28 @@ const Msg msgs[] = {
 {% endfor %}
 };
 
+const Val vals[] = {
+{% for address, sig in def_vals %}
+  {% for sg_name, def_val in sig %}
+    {% set address_hex = "0x%X" % address %}
+    {
+      .name = "{{sg_name}}",
+      .address = {{address_hex}},
+      .def_val = {{def_val}},
+      .sigs = sigs_{{address}},
+    },
+  {% endfor %}
+{% endfor %}
+};
+
 }
 
 const DBC {{dbc.name}} = {
   .name = "{{dbc.name}}",
   .num_msgs = ARRAYSIZE(msgs),
   .msgs = msgs,
+  .vals = vals,
+  .num_vals = ARRAYSIZE(vals),
 };
 
 dbc_init({{dbc.name}})

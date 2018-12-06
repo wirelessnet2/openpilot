@@ -1,5 +1,26 @@
-from common.numpy_fast import clip
 from cereal import car
+from common.numpy_fast import clip
+from selfdrive.config import Conversions as CV
+
+# kph
+V_CRUISE_MAX = 144
+V_CRUISE_MIN = 8
+V_CRUISE_DELTA = 8
+V_CRUISE_ENABLE_MIN = 40
+
+
+class MPC_COST_LAT:
+  PATH = 1.0
+  LANE = 3.0
+  HEADING = 1.0
+  STEER_RATE = 1.0
+
+
+class MPC_COST_LONG:
+  TTC = 5.0
+  DISTANCE = 0.1
+  ACCELERATION = 10.0
+  JERK = 20.0
 
 
 class EventTypes:
@@ -38,8 +59,8 @@ def learn_angle_offset(lateral_control, v_ego, angle_offset, c_poly, c_prob, ang
   # simple integral controller that learns how much steering offset to put to have the car going straight
   # while being in the middle of the lane
   min_offset = -5.  # deg
-  max_offset =  5.  # deg
-  alpha = 1./36000. # correct by 1 deg in 2 mins, at 30m/s, with 50cm of error, at 20Hz
+  max_offset = 5.  # deg
+  alpha = 1. / 36000.  # correct by 1 deg in 2 mins, at 30m/s, with 50cm of error, at 20Hz
   min_learn_speed = 1.
 
   # learn less at low speed or when turning
@@ -52,3 +73,26 @@ def learn_angle_offset(lateral_control, v_ego, angle_offset, c_poly, c_prob, ang
     angle_offset = clip(angle_offset, min_offset, max_offset)
 
   return angle_offset
+
+
+def update_v_cruise(v_cruise_kph, buttonEvents, enabled):
+  # handle button presses. TODO: this should be in state_control, but a decelCruise press
+  # would have the effect of both enabling and changing speed is checked after the state transition
+  for b in buttonEvents:
+    if enabled and not b.pressed:
+      if b.type == "accelCruise":
+        v_cruise_kph += V_CRUISE_DELTA - (v_cruise_kph % V_CRUISE_DELTA)
+      elif b.type == "decelCruise":
+        v_cruise_kph -= V_CRUISE_DELTA - ((V_CRUISE_DELTA - v_cruise_kph) % V_CRUISE_DELTA)
+      v_cruise_kph = clip(v_cruise_kph, V_CRUISE_MIN, V_CRUISE_MAX)
+
+  return v_cruise_kph
+
+
+def initialize_v_cruise(v_ego, buttonEvents, v_cruise_last):
+  for b in buttonEvents:
+    # 250kph or above probably means we never had a set speed
+    if b.type == "accelCruise" and v_cruise_last < 250:
+      return v_cruise_last
+
+  return int(round(clip(v_ego * CV.MS_TO_KPH, V_CRUISE_ENABLE_MIN, V_CRUISE_MAX)))

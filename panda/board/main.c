@@ -15,6 +15,7 @@
 #include "drivers/uart.h"
 #include "drivers/adc.h"
 #include "drivers/usb.h"
+#include "drivers/gmlan_alt.h"
 #include "drivers/can.h"
 #include "drivers/spi.h"
 #include "drivers/timer.h"
@@ -104,7 +105,14 @@ int get_health_pkt(void *dat) {
 
 #ifdef PANDA
   health->current = adc_get(ADCCHAN_CURRENT);
-  health->started = (GPIOA->IDR & (1 << 1)) == 0;
+  int safety_ignition = safety_ignition_hook();
+  if (safety_ignition < 0) {
+    //Use the GPIO pin to determine ignition
+    health->started = (GPIOA->IDR & (1 << 1)) == 0;
+  } else {
+    //Current safety hooks want to determine ignition (ex: GM)
+    health->started = safety_ignition;
+  }
 #else
   health->current = 0;
   health->started = (GPIOC->IDR & (1 << 13)) != 0;
@@ -175,6 +183,11 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, int hardwired) {
       puts(" err: "); puth(can_err_cnt);
       puts("\n");
       break;
+    // **** 0xc1: is grey panda
+    case 0xc1:
+      resp[0] = is_grey_panda;
+      resp_len = 1;
+      break;
     // **** 0xd0: fetch serial number
     case 0xd0:
       #ifdef PANDA
@@ -229,6 +242,8 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, int hardwired) {
     case 0xd9:
       if (setup->b.wValue.w == 1) {
         set_esp_mode(ESP_ENABLED);
+      } else if (setup->b.wValue.w == 2) {
+        set_esp_mode(ESP_BOOTMODE);
       } else {
         set_esp_mode(ESP_DISABLED);
       }
@@ -267,16 +282,22 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, int hardwired) {
       // and it's blocked over WiFi
       // Allow ELM security mode to be set over wifi.
       if (hardwired || setup->b.wValue.w == SAFETY_NOOUTPUT || setup->b.wValue.w == SAFETY_ELM327) {
-        safety_set_mode(setup->b.wValue.w);
+        safety_set_mode(setup->b.wValue.w, (int16_t)setup->b.wIndex.w);
         switch (setup->b.wValue.w) {
           case SAFETY_NOOUTPUT:
             can_silent = ALL_CAN_SILENT;
             break;
           case SAFETY_ELM327:
             can_silent = ALL_CAN_BUT_MAIN_SILENT;
+            can_autobaud_enabled[0] = false;
             break;
           default:
             can_silent = ALL_CAN_LIVE;
+            can_autobaud_enabled[0] = false;
+            can_autobaud_enabled[1] = false;
+            #ifdef PANDA
+              can_autobaud_enabled[2] = false;
+            #endif
             break;
         }
         can_init_all();
@@ -296,6 +317,7 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, int hardwired) {
     // **** 0xde: set can bitrate
     case 0xde:
       if (setup->b.wValue.w < BUS_MAX) {
+        can_autobaud_enabled[setup->b.wValue.w] = false;
         can_speed[setup->b.wValue.w] = setup->b.wIndex.w;
         can_init(CAN_NUM_FROM_BUS_NUM(setup->b.wValue.w));
       }
@@ -304,6 +326,7 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, int hardwired) {
     case 0xe0:
       ur = get_ring_by_number(setup->b.wValue.w);
       if (!ur) break;
+      if (ur == &esp_ring) uart_dma_drain();
       // read
       while ((resp_len < min(setup->b.wLength.w, MAX_RESP_LEN)) &&
                          getc(ur, (char*)&resp[resp_len])) {
@@ -468,6 +491,11 @@ void __initialize_hardware_early() {
   early();
 }
 
+void __attribute__ ((noinline)) enable_fpu() {
+  // enable the FPU
+  SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2));
+}
+
 int main() {
   // shouldn't have interrupts here, but just in case
   __disable_irq();
@@ -489,8 +517,14 @@ int main() {
   #endif
   puts(has_external_debug_serial ? "  real serial\n" : "  USB serial\n");
   puts(is_giant_panda ? "  GIANTpanda detected\n" : "  not GIANTpanda\n");
+  puts(is_grey_panda ? "  gray panda detected!\n" : "  white panda\n");
   puts(is_entering_bootmode ? "  ESP wants bootmode\n" : "  no bootmode\n");
   gpio_init();
+
+#ifdef PANDA
+  // panda has an FPU, let's use it!
+  enable_fpu();
+#endif
 
   // enable main uart if it's connected
   if (has_external_debug_serial) {
@@ -500,9 +534,12 @@ int main() {
   }
 
 #ifdef PANDA
-  // enable ESP uart
-  uart_init(USART1, 115200);
-
+  if (is_grey_panda) {
+    uart_init(USART1, 9600);
+  } else {
+    // enable ESP uart
+    uart_init(USART1, 115200);
+  }
   // enable LIN
   uart_init(UART5, 10400);
   UART5->CR2 |= USART_CR2_LINEN;
@@ -522,7 +559,7 @@ int main() {
   usb_init();
 
   // default to silent mode to prevent issues with Ford
-  safety_set_mode(SAFETY_NOOUTPUT);
+  safety_set_mode(SAFETY_NOOUTPUT, 0);
   can_silent = ALL_CAN_SILENT;
   can_init_all();
 
@@ -540,6 +577,11 @@ int main() {
 
   __enable_irq();
 
+  // if the error interrupt is enabled to quickly when the CAN bus is active
+  // something bad happens and you can't connect to the device over USB
+  delay(10000000);
+  CAN1->IER |= CAN_IER_ERRIE | CAN_IER_LECIE;
+
   // LED should keep on blinking all the time
   uint64_t cnt = 0;
 
@@ -551,6 +593,8 @@ int main() {
 
   for (cnt=0;;cnt++) {
     can_live = pending_can_live;
+
+    //puth(usart1_dma); puts(" "); puth(DMA2_Stream5->M0AR); puts(" "); puth(DMA2_Stream5->NDTR); puts("\n");
 
     #ifdef PANDA
       int current = adc_get(ADCCHAN_CURRENT);

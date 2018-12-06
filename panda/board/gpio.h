@@ -15,6 +15,7 @@ int has_external_debug_serial = 0;
 int is_giant_panda = 0;
 int is_entering_bootmode = 0;
 int revision = PANDA_REV_AB;
+int is_grey_panda = 0;
 
 int detect_with_pull(GPIO_TypeDef *GPIO, int pin, int mode) {
   set_gpio_mode(GPIO, pin, MODE_INPUT);
@@ -45,9 +46,14 @@ void detect() {
 
   // check if the ESP is trying to put me in boot mode
   is_entering_bootmode = !detect_with_pull(GPIOB, 0, PULL_UP);
+
+  // check if it's a grey panda by seeing if the SPI lines are floating
+  // TODO: is this reliable?
+  is_grey_panda = !(detect_with_pull(GPIOA, 4, PULL_DOWN) | detect_with_pull(GPIOA, 5, PULL_DOWN) | detect_with_pull(GPIOA, 6, PULL_DOWN) | detect_with_pull(GPIOA, 7, PULL_DOWN));
 #else
   // need to do this for early detect
   is_giant_panda = 0;
+  is_grey_panda = 0;
   revision = PANDA_REV_AB;
   is_entering_bootmode = 0;
 #endif
@@ -66,8 +72,15 @@ void clock_init() {
     RCC->PLLCFGR = RCC_PLLCFGR_PLLQ_2 | RCC_PLLCFGR_PLLM_3 |
                    RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLN_5 | RCC_PLLCFGR_PLLSRC_HSE;
   #else
-    RCC->PLLCFGR = RCC_PLLCFGR_PLLQ_2 | RCC_PLLCFGR_PLLM_3 |
-                   RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLSRC_HSE;
+    #ifdef PEDAL
+      // comma pedal has a 16mhz crystal
+      RCC->PLLCFGR = RCC_PLLCFGR_PLLQ_2 | RCC_PLLCFGR_PLLM_3 |
+                     RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLN_5 | RCC_PLLCFGR_PLLSRC_HSE;
+    #else
+      // NEO board has a 8mhz crystal
+      RCC->PLLCFGR = RCC_PLLCFGR_PLLQ_2 | RCC_PLLCFGR_PLLM_3 |
+                     RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLN_6 | RCC_PLLCFGR_PLLSRC_HSE;
+    #endif
   #endif
 
   // start PLL
@@ -106,7 +119,7 @@ void periph_init() {
   RCC->APB1ENR |= RCC_APB1ENR_DACEN;
   RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
   RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
-  //RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
+  RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
   RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
   RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;
   RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
@@ -126,8 +139,13 @@ void set_can_enable(CAN_TypeDef *CAN, int enabled) {
       // CAN1_EN
       set_gpio_output(GPIOC, 1, !enabled);
     #else
-      // CAN1_EN
-      set_gpio_output(GPIOB, 3, enabled);
+      #ifdef PEDAL
+        // CAN1_EN (not flipped)
+        set_gpio_output(GPIOB, 3, !enabled);
+      #else
+        // CAN1_EN
+        set_gpio_output(GPIOB, 3, enabled);
+      #endif
     #endif
   } else if (CAN == CAN2) {
     #ifdef PANDA
@@ -278,6 +296,14 @@ void gpio_init() {
   // C2,C3: analog mode, voltage and current sense
   set_gpio_mode(GPIOC, 2, MODE_ANALOG);
   set_gpio_mode(GPIOC, 3, MODE_ANALOG);
+
+#ifdef PEDAL
+  // comma pedal has inputs on C0 and C1
+  set_gpio_mode(GPIOC, 0, MODE_ANALOG);
+  set_gpio_mode(GPIOC, 1, MODE_ANALOG);
+  // DAC outputs on A4 and A5
+  //   apparently they don't need GPIO setup
+#endif
 
   // C8: FAN aka TIM3_CH4
   set_gpio_alternate(GPIOC, 8, GPIO_AF2_TIM3);
@@ -437,9 +463,10 @@ void early() {
 
 
   if (enter_bootloader_mode == ENTER_BOOTLOADER_MAGIC) {
+  #ifdef PANDA
     set_esp_mode(ESP_DISABLED);
+  #endif
     set_led(LED_GREEN, 1);
-
     jump_to_bootloader();
   }
 

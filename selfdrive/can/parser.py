@@ -1,14 +1,42 @@
-import os
 import time
 from collections import defaultdict
+import numbers
 
 from selfdrive.can.libdbc_py import libdbc, ffi
 
 class CANParser(object):
-  def __init__(self, dbc_name, signals, checks=[], bus=0):
+  def __init__(self, dbc_name, signals, checks=[], bus=0, sendcan=False, tcp_addr="127.0.0.1"):
     self.can_valid = True
     self.vl = defaultdict(dict)
     self.ts = defaultdict(dict)
+
+    self.dbc_name = dbc_name
+    self.dbc = libdbc.dbc_lookup(dbc_name)
+    self.msg_name_to_addres = {}
+    self.address_to_msg_name = {}
+
+    num_msgs = self.dbc[0].num_msgs
+    for i in range(num_msgs):
+      msg = self.dbc[0].msgs[i]
+
+      name = ffi.string(msg.name)
+      address = msg.address
+
+      self.msg_name_to_addres[name] = address
+      self.address_to_msg_name[address] = name
+
+    # Convert message names into addresses
+    for i in range(len(signals)):
+      s = signals[i]
+      if not isinstance(s[1], numbers.Number):
+        s = (s[0], self.msg_name_to_addres[s[1]], s[2])
+        signals[i] = s
+
+    for i in range(len(checks)):
+      c = checks[i]
+      if not isinstance(c[0], numbers.Number):
+        c = (self.msg_name_to_addres[c[0]], c[1])
+        checks[i] = c
 
     sig_names = dict((name, ffi.new("char[]", name)) for name, _, _ in signals)
 
@@ -21,15 +49,15 @@ class CANParser(object):
 
     message_options = dict((address, 0) for _, address, _ in signals)
     message_options.update(dict(checks))
-    
+
     message_options_c = ffi.new("MessageParseOptions[]", [
       {
-        'address': address,
+        'address': msg_address,
         'check_frequency': freq,
-      } for address, freq in message_options.iteritems()])
+      } for msg_address, freq in message_options.iteritems()])
 
     self.can = libdbc.can_init(bus, dbc_name, len(message_options_c), message_options_c,
-                               len(signal_options_c), signal_options_c)
+                               len(signal_options_c), signal_options_c, sendcan, tcp_addr)
 
     self.p_can_valid = ffi.new("bool*")
 
@@ -54,12 +82,54 @@ class CANParser(object):
       name = ffi.string(cv.name)
       self.vl[address][name] = cv.value
       self.ts[address][name] = cv.ts
+
+      sig_name = self.address_to_msg_name[address]
+      self.vl[sig_name][name] = cv.value
+      self.ts[sig_name][name] = cv.ts
       ret.add(address)
     return ret
 
   def update(self, sec, wait):
     libdbc.can_update(self.can, sec, wait)
     return self.update_vl(sec)
+
+class CANDefine(object):
+  def __init__(self, dbc_name):
+    self.dv = defaultdict(dict)
+    self.dbc_name = dbc_name
+    self.dbc = libdbc.dbc_lookup(dbc_name)
+
+    num_vals = self.dbc[0].num_vals
+
+    self.address_to_msg_name = {}
+    num_msgs = self.dbc[0].num_msgs
+    for i in range(num_msgs):
+      msg = self.dbc[0].msgs[i]
+      name = ffi.string(msg.name)
+      address = msg.address
+      self.address_to_msg_name[address] = name
+
+    for i in range(num_vals):
+      val = self.dbc[0].vals[i]
+
+      sgname = ffi.string(val.name)
+      address = val.address
+      def_val = ffi.string(val.def_val)
+
+      #separate definition/value pairs
+      def_val = def_val.split()
+      values = [int(v) for v in def_val[::2]]
+      defs = def_val[1::2]
+
+      if address not in self.dv:
+        self.dv[address] = {}
+        msgname = self.address_to_msg_name[address]
+        self.dv[msgname] = {}
+
+      # two ways to lookup: address or msg name
+      self.dv[address][sgname] = {v: d for v, d in zip(values, defs)} #build dict
+      self.dv[msgname][sgname] = self.dv[address][sgname]
+
 
 if __name__ == "__main__":
   from common.realtime import sec_since_boot
@@ -74,7 +144,7 @@ if __name__ == "__main__":
 
 
   # signals = [
-  #   ("XMISSION_SPEED", 0x158, 0), #sig_name, sig_address, default 
+  #   ("XMISSION_SPEED", 0x158, 0), #sig_name, sig_address, default
   #   ("WHEEL_SPEED_FL", 0x1d0, 0),
   #   ("WHEEL_SPEED_FR", 0x1d0, 0),
   #   ("WHEEL_SPEED_RL", 0x1d0, 0),
@@ -123,7 +193,7 @@ if __name__ == "__main__":
   #   (0x405, 3),
   # ]
 
-  # cp = CANParser("honda_civic_touring_2016_can", signals, checks, 0)
+  # cp = CANParser("honda_civic_touring_2016_can_generated", signals, checks, 0)
 
 
   signals = [
@@ -164,13 +234,13 @@ if __name__ == "__main__":
     (608, 50),
   ]
 
-  cp = CANParser("toyota_rav4_2017_pt", signals, checks, 0)
+  cp = CANParser("toyota_rav4_2017_pt_generated", signals, checks, 0)
 
   # print cp.vl
 
   while True:
     cp.update(int(sec_since_boot()*1e9), True)
     # print cp.vl
-    print cp.ts
-    print cp.can_valid
+    print(cp.ts)
+    print(cp.can_valid)
     time.sleep(0.01)

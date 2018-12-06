@@ -1,30 +1,29 @@
 #!/usr/bin/env python
 import os
 import struct
-
+from collections import namedtuple
 import zmq
 import numpy as np
 
 from opendbc import DBC_PATH
 
 from common.realtime import Ratekeeper
-
+from selfdrive.config import Conversions as CV
 import selfdrive.messaging as messaging
 from selfdrive.services import service_list
-from selfdrive.config import CruiseButtons
 from selfdrive.car.honda.hondacan import fix
+from selfdrive.car.honda.values import CAR
 from selfdrive.car.honda.carstate import get_can_signals
 from selfdrive.boardd.boardd import can_capnp_to_can_list, can_list_to_can_capnp
 
-from selfdrive.car.honda.old_can_parser import CANParser
+from selfdrive.can.plant_can_parser import CANParser
 from selfdrive.car.honda.interface import CarInterface
 
-from cereal import car
 from common.dbc import dbc
-honda = dbc(os.path.join(DBC_PATH, "honda_civic_touring_2016_can.dbc"))
+honda = dbc(os.path.join(DBC_PATH, "honda_civic_touring_2016_can_generated.dbc"))
 
 # Trick: set 0x201 (interceptor) in fingerprints for gas is controlled like if there was an interceptor
-CP = CarInterface.get_params("HONDA CIVIC 2016 TOURING", {0x201})
+CP = CarInterface.get_params(CAR.CIVIC, {0x201})
 
 
 def car_plant(pos, speed, grade, gas, brake):
@@ -37,7 +36,6 @@ def car_plant(pos, speed, grade, gas, brake):
   speed_base = power_peak/force_peak
   rolling_res = 0.01
   g = 9.81
-  wheel_r = 0.31
   frontal_area = 2.2
   air_density = 1.225
   gas_to_peak_linear_slope = 3.33
@@ -58,7 +56,7 @@ def car_plant(pos, speed, grade, gas, brake):
   creep_accel = np.interp(speed, creep_accel_bp, creep_accel_v)
   force_creep = creep_accel * mass
 
-  force_resistance = -(rolling_res * mass * g + 0.5 * speed**2 * aero_cd * air_density)
+  force_resistance = -(rolling_res * mass * g + 0.5 * speed**2 * aero_cd * air_density * frontal_area)
   force = force_gas + force_brake + force_resistance + force_grade + force_creep
   acceleration = force / mass
 
@@ -66,7 +64,7 @@ def car_plant(pos, speed, grade, gas, brake):
   return speed, acceleration
 
 def get_car_can_parser():
-  dbc_f = 'honda_civic_touring_2016_can.dbc'
+  dbc_f = 'honda_civic_touring_2016_can_generated.dbc'
   signals = [
     ("STEER_TORQUE", 0xe4, 0),
     ("STEER_TORQUE_REQUEST", 0xe4, 0),
@@ -92,8 +90,6 @@ class Plant(object):
 
   def __init__(self, lead_relevancy=False, rate=100, speed=0.0, distance_lead=2.0):
     self.rate = rate
-    self.civic = True
-    self.brake_only = False
 
     if not Plant.messaging_initialized:
       context = zmq.Context()
@@ -143,13 +139,13 @@ class Plant(object):
     if speed<0.3:
       return 0
     else:
-      return speed
+      return speed * CV.MS_TO_KPH
 
   def current_time(self):
     return float(self.rk.frame) / self.rate
 
   def step(self, v_lead=0.0, cruise_buttons=None, grade=0.0, publish_model = True):
-    gen_dbc, gen_signals, gen_checks = get_can_signals(CP)
+    gen_signals, gen_checks = get_can_signals(CP)
     sgs = [s[0] for s in gen_signals]
     msgs = [s[1] for s in gen_signals]
     cks_msgs = set(check[0] for check in gen_checks)
@@ -173,7 +169,7 @@ class Plant(object):
         fcw = True
 
     if self.cp.vl[0x1fa]['COMPUTER_BRAKE_REQUEST']:
-      brake = self.cp.vl[0x1fa]['COMPUTER_BRAKE']
+      brake = self.cp.vl[0x1fa]['COMPUTER_BRAKE'] * 0.003906248
     else:
       brake = 0.0
 
@@ -191,7 +187,6 @@ class Plant(object):
 
     # ******** run the car ********
     speed, acceleration = car_plant(self.distance_prev, self.speed_prev, grade, gas, brake)
-    standstill = (speed == 0)
     distance = self.distance_prev + speed * self.ts
     speed = self.speed_prev + self.ts * acceleration
     if speed <= 0:
@@ -208,7 +203,6 @@ class Plant(object):
     else:
       d_rel = 200.
       v_rel = 0.
-      a_rel = 0
     lateral_pos_rel = 0.
 
     # print at 5hz
@@ -216,16 +210,68 @@ class Plant(object):
       print "%6.2f m  %6.2f m/s  %6.2f m/s2   %.2f ang   gas: %.2f  brake: %.2f  steer: %5.2f     lead_rel: %6.2f m  %6.2f m/s" % (distance, speed, acceleration, self.angle_steer, gas, brake, steer_torque, d_rel, v_rel)
 
     # ******** publish the car ********
-    vls = [self.speed_sensor(speed), self.speed_sensor(speed), self.speed_sensor(speed), self.speed_sensor(speed), self.speed_sensor(speed),
-           self.angle_steer, self.angle_steer_rate, 0, self.gear_choice, speed!=0,
-           0, 0, 0, 0,
-           self.v_cruise, not self.seatbelt, self.seatbelt, self.brake_pressed, 0.,
-           self.user_gas, cruise_buttons, self.esp_disabled, 0,
-           self.user_brake, self.steer_error, self.brake_error,
-           self.brake_error, self.gear_shifter, self.main_on, self.acc_status,
-           self.pedal_gas, self.cruise_setting,
-           # append one more zero for gas interceptor
-           0,0,0,0,0,0]
+    vls_tuple = namedtuple('vls', [
+           'XMISSION_SPEED',
+           'WHEEL_SPEED_FL', 'WHEEL_SPEED_FR', 'WHEEL_SPEED_RL', 'WHEEL_SPEED_RR',
+           'STEER_ANGLE', 'STEER_ANGLE_RATE', 'STEER_TORQUE_SENSOR',
+           'LEFT_BLINKER', 'RIGHT_BLINKER',
+           'GEAR',
+           'WHEELS_MOVING',
+           'BRAKE_ERROR_1', 'BRAKE_ERROR_2',
+           'SEATBELT_DRIVER_LAMP', 'SEATBELT_DRIVER_LATCHED',
+           'BRAKE_PRESSED', 'BRAKE_SWITCH',
+           'CRUISE_BUTTONS',
+           'ESP_DISABLED',
+           'HUD_LEAD',
+           'USER_BRAKE',
+           'STEER_STATUS',
+           'GEAR_SHIFTER',
+           'PEDAL_GAS',
+           'CRUISE_SETTING',
+           'ACC_STATUS',
+
+           'CRUISE_SPEED_PCM',
+           'CRUISE_SPEED_OFFSET',
+
+           'DOOR_OPEN_FL', 'DOOR_OPEN_FR', 'DOOR_OPEN_RL', 'DOOR_OPEN_RR',
+
+           'CAR_GAS',
+           'MAIN_ON',
+           'EPB_STATE',
+           'BRAKE_HOLD_ACTIVE',
+           'INTERCEPTOR_GAS',
+           ])
+    vls = vls_tuple(
+           self.speed_sensor(speed),
+           self.speed_sensor(speed), self.speed_sensor(speed), self.speed_sensor(speed), self.speed_sensor(speed),
+           self.angle_steer, self.angle_steer_rate, 0, #Steer torque sensor
+           0, 0,  # Blinkers
+           self.gear_choice,
+           speed != 0,
+           self.brake_error, self.brake_error,
+           not self.seatbelt, self.seatbelt,  # Seatbelt
+           self.brake_pressed, 0., #Brake pressed, Brake switch
+           cruise_buttons,
+           self.esp_disabled,
+           0,  # HUD lead
+           self.user_brake,
+           self.steer_error,
+           self.gear_shifter,
+           self.pedal_gas,
+           self.cruise_setting,
+           self.acc_status,
+
+           self.v_cruise,
+           0,  # Cruise speed offset
+
+           0, 0, 0, 0,  # Doors
+
+           self.user_gas,
+           self.main_on,
+           0,  # EPB State
+           0,  # Brake hold
+           0   # Interceptor feedback
+           )
 
     # TODO: publish each message at proper frequency
     can_msgs = []
@@ -233,11 +279,12 @@ class Plant(object):
       msg_struct = {}
       indxs = [i for i, x in enumerate(msgs) if msg == msgs[i]]
       for i in indxs:
-        msg_struct[sgs[i]] = vls[i]
+        msg_struct[sgs[i]] = getattr(vls, sgs[i])
 
       if "COUNTER" in honda.get_signals(msg):
         msg_struct["COUNTER"] = self.rk.frame % 4
 
+      msg = honda.lookup_msg_id(msg)
       msg_data = honda.encode(msg, msg_struct)
 
       if "CHECKSUM" in honda.get_signals(msg):
@@ -255,6 +302,14 @@ class Plant(object):
                   "0f00000"
       can_msgs.append([0x400, 0, radar_state_msg, 1])
       can_msgs.append([0x445, 0, radar_msg.decode("hex"), 1])
+
+    # add camera msg so controlsd thinks it's alive
+    msg_struct["COUNTER"] = self.rk.frame % 4
+    msg = honda.lookup_msg_id(0xe4)
+    msg_data = honda.encode(msg, msg_struct)
+    msg_data = fix(msg_data, 0xe4)
+    can_msgs.append([0xe4, 0, msg_data, 2])
+
     Plant.logcan.send(can_list_to_can_capnp(can_msgs).to_bytes())
 
     # ******** publish a fake model going straight and fake calibration ********
@@ -294,12 +349,7 @@ class Plant(object):
 def plant_thread(rate=100):
   plant = Plant(rate)
   while 1:
-    if plant.rk.frame%100 >= 20 and plant.rk.frame%100 <= 25:
-      cruise_buttons = CruiseButtons.RES_ACCEL
-    else:
-      cruise_buttons = 0
     plant.step()
 
 if __name__ == "__main__":
   plant_thread()
-
