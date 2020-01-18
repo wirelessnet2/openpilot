@@ -271,30 +271,31 @@ static void honda_bosch_harness_init(int16_t param) {
   honda_alt_brake_msg = (param == 1) ? true : false;
 }
 
-static int honda_nidec_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
-  // fwd from car to camera. also fwd certain msgs from camera to car
-  // 0xE4 is steering on all cars except CRV and RDX, 0x194 for CRV and RDX,
-  // 0x1FA is brake control, 0x30C is acc hud, 0x33D is lkas hud,
-  int bus_fwd = -1;
-
-  if (!relay_malfunction) {
-    if (bus_num == 0) {
-      bus_fwd = 2;
-    }
-    if (bus_num == 2) {
-      // block stock lkas messages and stock acc messages (if OP is doing ACC)
-      int addr = GET_ADDR(to_fwd);
-      bool is_lkas_msg = (addr == 0xE4) || (addr == 0x194) || (addr == 0x33D);
-      bool is_acc_hud_msg = addr == 0x30C;
-      bool is_brake_msg = addr == 0x1FA;
-      bool block_fwd = is_lkas_msg || is_acc_hud_msg || (is_brake_msg && !honda_fwd_brake);
-      if (!block_fwd) {
-        bus_fwd = 0;
-      }
-    }
-  }
-  return bus_fwd;
-}
+//Clarity
+//static int honda_nidec_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
+//  // fwd from car to camera. also fwd certain msgs from camera to car
+//  // 0xE4 is steering on all cars except CRV and RDX, 0x194 for CRV and RDX,
+//  // 0x1FA is brake control, 0x30C is acc hud, 0x33D is lkas hud,
+//  int bus_fwd = -1;
+//
+//  if (!relay_malfunction) {
+//    if (bus_num == 0) {
+//      bus_fwd = 2;
+//    }
+//    if (bus_num == 2) {
+//      // block stock lkas messages and stock acc messages (if OP is doing ACC)
+//      int addr = GET_ADDR(to_fwd);
+//      bool is_lkas_msg = (addr == 0xE4) || (addr == 0x194) || (addr == 0x33D);
+//      bool is_acc_hud_msg = addr == 0x30C;
+//      bool is_brake_msg = addr == 0x1FA;
+//      bool block_fwd = is_lkas_msg || is_acc_hud_msg || (is_brake_msg && !honda_fwd_brake);
+//      if (!block_fwd) {
+//        bus_fwd = 0;
+//      }
+//    }
+//  }
+//  return bus_fwd;
+//}
 
 static int honda_bosch_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   int bus_fwd = -1;
@@ -321,7 +322,7 @@ const safety_hooks honda_nidec_hooks = {
   .rx = honda_rx_hook,
   .tx = honda_tx_hook,
   .tx_lin = nooutput_tx_lin_hook,
-  .fwd = honda_nidec_fwd_hook,
+  .fwd = default_fwd_hook, //Clarity
   .addr_check = honda_rx_checks,
   .addr_check_len = sizeof(honda_rx_checks) / sizeof(honda_rx_checks[0]),
 };
