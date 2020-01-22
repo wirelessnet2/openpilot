@@ -132,7 +132,7 @@ def get_can_signals(CP):
                 ("MAIN_ON", "SCM_FEEDBACK", 0),
                 ("IMPERIAL_UNIT", "HUD_SETTING", 0),
                 ("EPB_STATE", "EPB_STATUS", 0)]
-  elif CP.carFingerprint == CAR.CLARITY:
+  elif CP.carFingerprint == CAR.CLARITY: #Clarity
     signals += [("CAR_GAS", "GAS_PEDAL_2", 0),
                 ("MAIN_ON", "SCM_FEEDBACK", 0),
                 ("EPB_STATE", "EPB_STATUS", 0)]
@@ -229,7 +229,7 @@ class CarState():
                          K=[[0.12287673], [0.29666309]])
     self.v_ego = 0.0
 
-  def update(self, cp): #Clarity
+  def update(self, cp): #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
 
     # car params
     v_weight_v = [0., 1.]  # don't trust smooth speed at low values to avoid premature zero snapping
@@ -263,7 +263,7 @@ class CarState():
     # LOW_SPEED_LOCKOUT is not worth a warning
     self.steer_warning = steer_status not in ['NORMAL', 'LOW_SPEED_LOCKOUT', 'NO_TORQUE_ALERT_2']
 
-    if self.CP.carFingerprint == CAR.CLARITY: #Clarity - Cruise Fault
+    if self.CP.carFingerprint == CAR.CLARITY: #Clarity - This Fixes The Cruise Fault Error Displayed On The EON. -wirelessnet2
       self.brake_error = 0
     else:
       self.brake_error = cp.vl["STANDSTILL"]['BRAKE_ERROR_1'] or cp.vl["STANDSTILL"]['BRAKE_ERROR_2']
@@ -376,12 +376,12 @@ class CarState():
     if self.CP.carFingerprint in HONDA_BOSCH:
       self.stock_aeb = bool(cp_cam.vl["ACC_CONTROL"]["AEB_STATUS"] and cp_cam.vl["ACC_CONTROL"]["ACCEL_COMMAND"] < -1e-5)
     else:
-      self.stock_aeb = bool(0) #Clarity
+      self.stock_aeb = bool(0) #Clarity: Since we don't have the Factory ADAS Camera connected, we will never need these. If we leave it in, it calls on cp_cam and causes errors. -wirelessnet2
 
     if self.CP.carFingerprint in HONDA_BOSCH:
       self.stock_hud = False
       self.stock_fcw = False
-    else: #Clarity
-      self.stock_fcw = bool(0) #Clarity
-      self.stock_hud = 0 #Clarity
-      self.stock_brake = 0 #Clarity
+    else:
+      self.stock_fcw = bool(0) #Clarity: Since we don't have the Factory ADAS Camera connected, we will never need these. If we leave it in, it calls on stock[] and causes errors. -wirelessnet2
+      self.stock_hud = 0 #Clarity: Since we don't have the Factory ADAS Camera connected, we will never need these. If we leave it in, it calls on stock[] and causes errors. -wirelessnet2
+      self.stock_brake = 0 #Clarity: Since we don't have the Factory ADAS Camera connected, we will never need these. If we leave it in, it calls on stock[] and causes errors. -wirelesset2

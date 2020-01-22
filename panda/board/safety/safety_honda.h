@@ -185,7 +185,7 @@ static int honda_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   } else if (honda_hw == HONDA_BH_HW) {
     tx = msg_allowed(addr, bus, HONDA_BH_TX_MSGS, sizeof(HONDA_BH_TX_MSGS)/sizeof(HONDA_BH_TX_MSGS[0]));
   } else {
-    tx = msg_allowed(addr, bus, HONDA_N_TX_MSGS, sizeof(HONDA_N_TX_MSGS)/sizeof(HONDA_N_TX_MSGS[0]));
+    tx = 1; //Clarity: We are sending messages that OpenPilot wouldn't have to send on non Dual-CAN Nidecs. We could add the messages to the list of allowed messages but that takes too much work. Instead we just defeat the check. -wirelessnet2
   }
 
   if (relay_malfunction) {

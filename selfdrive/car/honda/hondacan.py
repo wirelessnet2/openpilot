@@ -1,3 +1,4 @@
+import struct #Clarity
 import common.numpy_fast as np #Clarity
 from selfdrive.config import Conversions as CV
 from selfdrive.car.honda.values import CAR, HONDA_BOSCH, VEHICLE_STATE_MSG #Clarity
@@ -119,9 +120,17 @@ def create_ui_commands(packer, pcm_speed, hud, car_fingerprint, is_metric, idx, 
   }
   commands.append(packer.make_can_msg('LKAS_HUD', bus_lkas, lkas_hud_values, idx))
 
+  if car_fingerprint in (CAR.CIVIC, CAR.ODYSSEY):
+    radar_hud_values = {
+      'ACC_ALERTS': hud.acc_alert,
+      'LEAD_SPEED': 0x1fe,  # What are these magic values
+      'LEAD_STATE': 0x7,
+      'LEAD_DISTANCE': 0x1e,
+    }
+    commands.append(packer.make_can_msg('RADAR_HUD', bus_pt, radar_hud_values, idx))
   return commands
 
-#Clarity
+#Clarity: Since we don't have a factory ADAS Camera to drive the Radar, we have to create the messages ourselves. -wirelessnet2
 def create_radar_commands(v_ego, car_fingerprint, new_radar_config, idx):
   """Creates an iterable of CAN messages for the radar system."""
   commands = []
@@ -147,7 +156,5 @@ def spam_buttons_command(packer, button_val, idx, car_fingerprint, has_relay):
     'CRUISE_BUTTONS': button_val,
     'CRUISE_SETTING': 0,
   }
-  #Clarity
-  #bus = get_pt_bus(car_fingerprint, has_relay)
-  bus = 0
+  bus = get_pt_bus(car_fingerprint, has_relay)
   return packer.make_can_msg("SCM_BUTTONS", bus, values, idx)

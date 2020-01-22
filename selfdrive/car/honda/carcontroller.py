@@ -1,4 +1,3 @@
-from cereal import car #Clarity
 from collections import namedtuple
 from cereal import car
 from common.realtime import DT_CTRL
@@ -77,7 +76,7 @@ HUDData = namedtuple("HUDData",
 
 
 class CarController():
-  def __init__(self, dbc_name, CP):
+  def __init__(self, dbc_name):
     self.braking = False
     self.brake_steady = 0.
     self.brake_last = 0.
@@ -86,10 +85,6 @@ class CarController():
     self.packer = CANPacker(dbc_name)
     self.new_radar_config = False
     self.eps_modified = False
-    for fw in CP.carFw:
-      if fw.ecu == "eps" and b"," in fw.fwVersion:
-        print("EPS FW MODIFIED!")
-        self.eps_modified = True
 
   def update(self, enabled, CS, frame, actuators, \
              pcm_speed, pcm_override, pcm_cancel_cmd, pcm_accel, \
@@ -135,7 +130,6 @@ class CarController():
       STEER_MAX = 0x3e8  # CR-V only uses 12-bits and requires a lower value
     elif CS.CP.carFingerprint in (CAR.ODYSSEY_CHN):
       STEER_MAX = 0x7FFF
-    #Clarity - Note: may use this if self.eps_modified
     elif CS.CP.carFingerprint in (CAR.CIVIC) and self.eps_modified:
       STEER_MAX = 0x1400
     else:
@@ -146,7 +140,6 @@ class CarController():
     apply_brake = int(clip(self.brake_last * BRAKE_MAX, 0, BRAKE_MAX - 1))
     apply_steer = int(clip(-actuators.steer * STEER_MAX, -STEER_MAX, STEER_MAX))
 
-    #Clarity - Note: may use this if self.eps_modified
     if CS.CP.carFingerprint in (CAR.CIVIC) and self.eps_modified:
       if apply_steer > 0xA00:
         apply_steer = (apply_steer - 0xA00) / 2 + 0xA00
@@ -190,7 +183,7 @@ class CarController():
           # send exactly zero if apply_gas is zero. Interceptor will send the max between read value and apply_gas.
           # This prevents unexpected pedal range rescaling
           can_sends.append(create_gas_command(self.packer, apply_gas, idx))
-
+          
       #Clarity
       # radar at 20Hz, but these msgs need to be sent at 50Hz on ilx (seems like an Acura bug)
       radar_send_step = 5
