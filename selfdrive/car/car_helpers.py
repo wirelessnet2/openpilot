@@ -57,14 +57,14 @@ def only_toyota_left(candidate_cars):
 # BOUNTY: every added fingerprint in selfdrive/car/*/values.py is a $100 coupon code on shop.comma.ai
 # **** for use live only ****
 def fingerprint(logcan, sendcan, has_relay):
-  if has_relay:
+  """if has_relay:
     # Vin query only reliably works thorugh OBDII
     bus = 1
     addr, vin = get_vin(logcan, sendcan, bus)
     _, car_fw = get_fw_versions(logcan, sendcan, bus)
-  else:
-    vin = VIN_UNKNOWN
-    _, car_fw = set(), []
+  else:""" #Clarity: This makes the Black Panda/Uno take forever to begin sending messages upon Ignition on. -wirelessnet2
+  vin = VIN_UNKNOWN
+  _, car_fw = set(), []
 
   cloudlog.warning("VIN %s", vin)
   Params().put("CarVin", vin)
