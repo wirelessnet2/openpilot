@@ -22,7 +22,7 @@ VISUAL_HUD = {
   VisualAlert.speedTooHigh: 8}
 
 class ECU:
-  CAM = 0
+  CAM = 0 #Clarity
 
 class CAR:
   ACCORD = "HONDA ACCORD 2018 SPORT 2T"
