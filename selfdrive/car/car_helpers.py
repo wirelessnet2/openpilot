@@ -67,7 +67,7 @@ def fingerprint(logcan, sendcan, has_relay):
     # Vin query only reliably works thorugh OBDII
     bus = 1
 
-    cached_params = Params().get("CarParamsCache")
+    """cached_params = Params().get("CarParamsCache")
     if cached_params is not None:
       cloudlog.warning("Using cached CarParams")
       CP = car.CarParams.from_bytes(cached_params)
@@ -78,9 +78,9 @@ def fingerprint(logcan, sendcan, has_relay):
       car_fw = get_fw_versions(logcan, sendcan, bus)
 
     fw_candidates = match_fw_to_car(car_fw)
-  else:
-    vin = VIN_UNKNOWN
-    fw_candidates, car_fw = set(), []
+  else:"""  #Clarity: This makes the Black Panda/Uno take forever to begin sending messages upon Ignition on. -wirelessnet2
+  vin = VIN_UNKNOWN
+  fw_candidates, car_fw = set(), []
 
   cloudlog.warning("VIN %s", vin)
   Params().put("CarVin", vin)

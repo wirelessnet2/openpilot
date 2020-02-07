@@ -98,7 +98,7 @@ void harness_init(void) {
     }
 
     // keep busses connected by default
-    set_intercept_relay(false);
+    set_intercept_relay(true); //Clarity: In the Clarity, the Car Harness relay should ALWAYS be physically open, no exceptions. Otherwise the Main F-CANs are bridged. -wirelessnet2
   } else {
     puts("failed to detect car harness!\n");
   }

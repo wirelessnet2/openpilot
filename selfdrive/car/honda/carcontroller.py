@@ -76,7 +76,7 @@ HUDData = namedtuple("HUDData",
 
 
 class CarController():
-  def __init__(self, dbc_name, CP):
+  def __init__(self, dbc_name): #Clarity: WORK IN PROGRESS IDK IF THIS IS NEEDED -wirelessnet2
     self.braking = False
     self.brake_steady = 0.
     self.brake_last = 0.
@@ -85,10 +85,7 @@ class CarController():
     self.packer = CANPacker(dbc_name)
     self.new_radar_config = False
     self.eps_modified = False
-    for fw in CP.carFw:
-      if fw.ecu == "eps" and b"," in fw.fwVersion:
-        print("EPS FW MODIFIED!")
-        self.eps_modified = True
+
 
   def update(self, enabled, CS, frame, actuators, \
              pcm_speed, pcm_override, pcm_cancel_cmd, pcm_accel, \
@@ -127,7 +124,7 @@ class CarController():
     # **** process the car messages ****
 
     # *** compute control surfaces ***
-    BRAKE_MAX = 1024//4
+    BRAKE_MAX = 0x1E0 #Clarity: What is this magic value? -wirelessnet2
     if CS.CP.carFingerprint in (CAR.ACURA_ILX):
       STEER_MAX = 0xF00
     elif CS.CP.carFingerprint in (CAR.CRV, CAR.ACURA_RDX):
@@ -175,16 +172,23 @@ class CarController():
     else:
       # Send gas and brake commands.
       if (frame % 2) == 0:
-        idx = frame // 2
+        idx = (frame / 2) % 4 #Clarity
         ts = frame * DT_CTRL
-        pump_on, self.last_pump_ts = brake_pump_hysteresis(apply_brake, self.apply_brake_last, self.last_pump_ts, ts)
-        can_sends.append(hondacan.create_brake_command(self.packer, apply_brake, pump_on,
+        #pump_on, self.last_pump_ts = brake_pump_hysteresis(apply_brake, self.apply_brake_last, self.last_pump_ts, ts) #Clarity
+        can_sends.extend(hondacan.create_brake_command(self.packer, apply_brake,
           pcm_override, pcm_cancel_cmd, hud.fcw, idx, CS.CP.carFingerprint, CS.CP.isPandaBlack, CS.stock_brake))
-        self.apply_brake_last = apply_brake
+        #self.apply_brake_last = apply_brake #Clarity
 
         if CS.CP.enableGasInterceptor:
           # send exactly zero if apply_gas is zero. Interceptor will send the max between read value and apply_gas.
           # This prevents unexpected pedal range rescaling
           can_sends.append(create_gas_command(self.packer, apply_gas, idx))
 
+     #Clarity
+      # radar at 20Hz, but these msgs need to be sent at 50Hz on ilx (seems like an Acura bug)
+      radar_send_step = 5
+  #    if (frame % radar_send_step) == 0:
+      idx = (frame/radar_send_step) % 4
+      can_sends.extend(hondacan.create_radar_commands(CS.v_ego, CS.CP.carFingerprint, self.new_radar_config, idx))
+    
     return can_sends

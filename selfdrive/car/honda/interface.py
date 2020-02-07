@@ -83,7 +83,7 @@ class CarInterface(CarInterfaceBase):
     self.brake_pressed_prev = False
 
     self.cp = get_can_parser(CP)
-    self.cp_cam = get_cam_can_parser(CP)
+    #self.cp_cam = get_cam_can_parser(CP) #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
 
     # *** init the major players ***
     self.CS = CarState(CP)
@@ -91,7 +91,7 @@ class CarInterface(CarInterfaceBase):
 
     self.CC = None
     if CarController is not None:
-      self.CC = CarController(self.cp.dbc_name, CP)
+      self.CC = CarController(self.cp.dbc_name) #Clarity: I deleted the CP becuase I was getting errors with __init__ receiving too many positional arguments. -wirelessnet2
 
     if self.CS.CP.carFingerprint == CAR.ACURA_ILX:
       self.compute_gb = get_compute_gb_acura()
@@ -146,7 +146,7 @@ class CarInterface(CarInterfaceBase):
       ret.openpilotLongitudinalControl = False
     else:
       ret.safetyModel = car.CarParams.SafetyModel.hondaNidec
-      ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
+      ret.enableCamera = True #Clarity: We need to force this to True to make OpenPilot happy
       ret.enableGasInterceptor = 0x201 in fingerprint[0]
       ret.openpilotLongitudinalControl = ret.enableCamera
 
@@ -179,6 +179,20 @@ class CarInterface(CarInterfaceBase):
 
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.4], [0.12]] if eps_modified else [[0.8], [0.24]]
       ret.lateralTuning.pid.kf = 0.00006
+      ret.longitudinalTuning.kpBP = [0., 5., 35.]
+      ret.longitudinalTuning.kpV = [3.6, 2.4, 1.5]
+      ret.longitudinalTuning.kiBP = [0., 35.]
+      ret.longitudinalTuning.kiV = [0.54, 0.36]
+
+    elif candidate == CAR.CLARITY: #Clarity: Just adding Clarity car parameters. -wirelessnet2
+      stop_and_go = True
+      ret.mass = 4052. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.wheelbase = 2.75
+      ret.centerToFront = ret.wheelbase * 0.4
+      ret.steerRatio = 16.00  # was 17.03, 12.72 is end-to-end spec
+      tire_stiffness_factor = 1.
+
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.8], [0.24]]
       ret.longitudinalTuning.kpBP = [0., 5., 35.]
       ret.longitudinalTuning.kpV = [3.6, 2.4, 1.5]
       ret.longitudinalTuning.kiBP = [0., 35.]
@@ -378,14 +392,14 @@ class CarInterface(CarInterfaceBase):
   def update(self, c, can_strings):
     # ******************* do can recv *******************
     self.cp.update_strings(can_strings)
-    self.cp_cam.update_strings(can_strings)
+    #self.cp_cam.update_strings(can_strings) #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
 
-    self.CS.update(self.cp, self.cp_cam)
+    self.CS.update(self.cp) #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
 
     # create message
     ret = car.CarState.new_message()
 
-    ret.canValid = self.cp.can_valid and self.cp_cam.can_valid
+    ret.canValid = self.cp.can_valid #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
 
     # speeds
     ret.vEgo = self.CS.v_ego
