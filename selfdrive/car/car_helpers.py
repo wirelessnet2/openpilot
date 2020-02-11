@@ -63,11 +63,21 @@ def only_toyota_left(candidate_cars):
 
 # **** for use live only ****
 def fingerprint(logcan, sendcan, has_relay):
+  bus = 2
+  car_fw = get_fw_versions(logcan, sendcan, bus) 
+  fw_candidates = match_fw_to_car(car_fw)
+  if fw_candidates is not None:
+    print("FOUND A CAR TO MATCH FW")
   if has_relay:
+    bus = 1
+    _, vin = get_vin(logcan, sendcan, bus)
+
+
+  '''if has_relay:
     # Vin query only reliably works thorugh OBDII
     bus = 1
 
-    """cached_params = Params().get("CarParamsCache")
+    cached_params = Params().get("CarParamsCache")
     if cached_params is not None:
       cloudlog.warning("Using cached CarParams")
       CP = car.CarParams.from_bytes(cached_params)
@@ -78,10 +88,10 @@ def fingerprint(logcan, sendcan, has_relay):
       car_fw = get_fw_versions(logcan, sendcan, bus)
 
     fw_candidates = match_fw_to_car(car_fw)
-  else:"""  #Clarity: This makes the Black Panda/Uno take forever to begin sending messages upon Ignition on. -wirelessnet2
-  vin = VIN_UNKNOWN
-  fw_candidates, car_fw = set(), []
-
+  else:
+    vin = VIN_UNKNOWN
+    fw_candidates, car_fw = set(), []'''
+    
   cloudlog.warning("VIN %s", vin)
   Params().put("CarVin", vin)
 

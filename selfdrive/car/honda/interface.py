@@ -170,6 +170,9 @@ class CarInterface(CarInterfaceBase):
       if fw.ecu == "eps" and b"," in fw.fwVersion:
         eps_modified = True
 
+    print("eps_modified")
+    print(eps_modified)
+
     if candidate in [CAR.CIVIC, CAR.CIVIC_BOSCH]:
       stop_and_go = True
       ret.mass = CivicParams.MASS
