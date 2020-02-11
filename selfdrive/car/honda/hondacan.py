@@ -103,10 +103,10 @@ def create_ui_commands(packer, pcm_speed, hud, car_fingerprint, is_metric, idx, 
       'IMPERIAL_UNIT': int(not is_metric),
       'SET_ME_X01_2': 1,
       'SET_ME_X01': 1,
-      "FCM_OFF": 0, #CLarity: This call on stock_hud[] -wirelessnet2
-      "FCM_OFF_2": 0, #CLarity: This call on stock_hud[] -wirelessnet2
-      "FCM_PROBLEM": 0, #CLarity: This call on stock_hud[] -wirelessnet2
-      "ICONS": 0, #CLarity: This call on stock_hud[] -wirelessnet2
+      "FCM_OFF": 0, #Clarity: This call on stock_hud[] and causes a crash. -wirelessnet2
+      "FCM_OFF_2": 0, #Clarity: This call on stock_hud[] and causes a crash. -wirelessnet2
+      "FCM_PROBLEM": 0, #Clarity: This call on stock_hud[] and causes a crash. -wirelessnet2
+      "ICONS": 0, #Clarity: This call on stock_hud[] and causes a crash. -wirelessnet2
     }
     commands.append(packer.make_can_msg("ACC_HUD", bus_pt, acc_hud_values, idx))
 
