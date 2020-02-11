@@ -76,7 +76,7 @@ HUDData = namedtuple("HUDData",
 
 
 class CarController():
-  def __init__(self, dbc_name): #Clarity: WORK IN PROGRESS IDK IF THIS IS NEEDED -wirelessnet2
+  def __init__(self, dbc_name, CP):
     self.braking = False
     self.brake_steady = 0.
     self.brake_last = 0.
