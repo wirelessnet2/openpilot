@@ -9,7 +9,7 @@ def get_attr_from_cars(attr): #Clarity: This modification limits the scope of ge
 
   try:
     car_name = 'honda'
-    values = __import__(BASEDIR + 'selfdrive.car.%s.values' % car_name, fromlist=[attr])
+    values = __import__('selfdrive.car.%s.values' % car_name, fromlist=[attr])
     if hasattr(values, attr):
       attr_values = getattr(values, attr)
 
