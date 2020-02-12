@@ -89,7 +89,7 @@ class PathPlanner():
     self.LP.parse_model(sm['model'])
 #############
     # Dynamic steerRatio
-    self.steerRatioNew = CP.steerRatio - CP.steerRatioV * (abs(angle_steers))
+    self.steerRatioNew = CP.steerRatio - 0.008 * (abs(angle_steers)) #WE NEED TO FIND THE EXACT VALUE FROM HONDA TECHINFO. THIS HAS TO DO WITH THE VGR AND ITS RATE OF STEER RATIO DECREASE PER DEGREE OF STEER ANGLE INCREASE. -wirelessnet2
     self.steerRatio = self.steerRatioNew
 
 #############

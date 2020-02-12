@@ -191,7 +191,6 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 2.75
       ret.centerToFront = ret.wheelbase * 0.4
       ret.steerRatio = 16.00  # was 17.03, 12.72 is end-to-end spec
-      ret.steerRatioV = 0.008 #WE NEED TO FIND THE EXACT VALUE FROM HONDA TECHINFO. THIS HAS TO DO WITH THE VGR AND ITS RATE OF STEER RATIO DECREASE PER DEGREE OF STEER ANGLE INCREASE. -wirelessnet2
       if eps_modified:
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0x0, 0x580, 0xA00, 0xD00, 0xF00, 0x10C0, 0x11FF, 0x1300, 0x2800],  [0x0, 0x100, 0x200, 0x301, 0x3FF, 0x5FF, 0x800, 0x9FE, 0xF00]]
         ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.4], [0.12]]
