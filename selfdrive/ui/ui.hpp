@@ -51,7 +51,8 @@ const int vwp_h = 1080;
 const int nav_w = 640;
 const int nav_ww= 760;
 const int sbr_w = 300;
-const int bdr_s = 30;
+const int bdr_s = 30; 
+const int bdr_is = 30;
 const int box_x = sbr_w+bdr_s;
 const int box_y = bdr_s;
 const int box_w = vwp_w-sbr_w-(bdr_s*2);
@@ -98,8 +99,13 @@ typedef struct UIScene {
   bool decel_for_model;
 
   float speedlimit;
+  float angleSteers;
+  float speedlimitaheaddistance;
+  bool speedlimitahead_valid;
   bool speedlimit_valid;
   bool map_valid;
+  bool brakeLights;
+
 
   float curvature;
   int engaged;
@@ -128,6 +134,12 @@ typedef struct UIScene {
 
   // Used to show gps planner status
   bool gps_planner_active;
+
+  // dev ui
+  float angleSteersDes;
+  float pa0;
+  float freeSpace;
+
 } UIScene;
 
 typedef struct {
@@ -165,6 +177,7 @@ typedef struct UIState {
   int img_turn;
   int img_face;
   int img_map;
+  int img_brake;
 
   // sockets
   Context *ctx;
@@ -174,6 +187,7 @@ typedef struct UIState {
   SubSocket *radarstate_sock;
   SubSocket *map_data_sock;
   SubSocket *uilayout_sock;
+  SubSocket *carstate_sock;  
   Poller * poller;
 
   int active_app;
