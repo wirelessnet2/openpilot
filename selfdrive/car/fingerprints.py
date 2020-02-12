@@ -12,8 +12,6 @@ def get_attr_from_cars(attr): #Clarity: This modification limits the scope of ge
     values = __import__('selfdrive.car.%s.values' % car_name, fromlist=[attr])
     if hasattr(values, attr):
       attr_values = getattr(values, attr)
-    else:
-      continue
 
     for f, v in attr_values.items():
       result[f] = v
