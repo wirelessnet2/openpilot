@@ -62,25 +62,27 @@ def only_toyota_left(candidate_cars):
 
 
 # **** for use live only ****
-def fingerprint(logcan, sendcan, has_relay):
+def fingerprint(logcan, sendcan, has_relay): #I reworked a good portion of fingerprint code to MASSIVELY SPEED UP GET_FW_VERSIONS() and bring fingerprinting v2 and eps_modified detection to non-relay pandas and comma power-less relay panda installs. -wirelessnet2
   if has_relay:
     # Vin query only reliably works thorugh OBDII
     bus = 1
+    _, vin = get_vin(logcan, sendcan, bus)
+  else:
+    vin = VIN_UNKNOWN
 
-    """cached_params = Params().get("CarParamsCache")
-    if cached_params is not None:
-      cloudlog.warning("Using cached CarParams")
-      CP = car.CarParams.from_bytes(cached_params)
-      vin = CP.carVin
-      car_fw = list(CP.carFw)
-    else:
-      _, vin = get_vin(logcan, sendcan, bus)
-      car_fw = get_fw_versions(logcan, sendcan, bus)
-
-    fw_candidates = match_fw_to_car(car_fw)
-  else:"""  #Clarity: This makes the Black Panda/Uno take forever to begin sending messages upon Ignition on. -wirelessnet2
-  vin = VIN_UNKNOWN
-  fw_candidates, car_fw = set(), []
+  bus = 2
+  car_fw = get_fw_versions(logcan, sendcan, bus)
+  fw_candidates = match_fw_to_car(car_fw)
+  
+  if car_fw is None:
+    fw_candidates, car_fw = set(), []
+    
+  bus = 1
+  
+  print("printing VIN")
+  print(vin)
+  print("printing fw versions")
+  print(car_fw)
 
   cloudlog.warning("VIN %s", vin)
   Params().put("CarVin", vin)
