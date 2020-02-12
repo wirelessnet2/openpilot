@@ -82,6 +82,11 @@ def fingerprint(logcan, sendcan, has_relay):
     vin = VIN_UNKNOWN
     fw_candidates, car_fw = set(), []
 
+  print("printing VIN")
+  print(vin)
+  print("printing fw versions")
+  print(car_fw)
+
   cloudlog.warning("VIN %s", vin)
   Params().put("CarVin", vin)
 

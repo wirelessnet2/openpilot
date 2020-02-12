@@ -7,20 +7,17 @@ def get_attr_from_cars(attr): #Clarity: This modification limits the scope of ge
   # - values are attr values from all car folders
   result = {}
 
-  for car_folder in [x[0] for x in os.walk(BASEDIR + '/selfdrive/car')]:
-    try:
-      car_name = 'honda'
-      values = __import__('selfdrive.car.%s.values' % car_name, fromlist=[attr])
-      if hasattr(values, attr):
-        attr_values = getattr(values, attr)
-      else:
-        continue
+  try:
+    car_name = 'honda'
+    values = __import__(BASEDIR + 'selfdrive.car.%s.values' % car_name, fromlist=[attr])
+    if hasattr(values, attr):
+      attr_values = getattr(values, attr)
 
-      for f, v in attr_values.items():
-        result[f] = v
+    for f, v in attr_values.items():
+      result[f] = v
 
-    except (ImportError, IOError):
-      pass
+  except (ImportError, IOError):
+    pass
 
   return result
 
