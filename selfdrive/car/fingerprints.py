@@ -9,8 +9,8 @@ def get_attr_from_cars(attr): #Clarity: This modification limits the scope of ge
 
   for car_folder in [x[0] for x in os.walk(BASEDIR + '/selfdrive/car')]:
     try:
-      car_name = car_folder.split('/')[-1]
-      values = __import__('selfdrive.car.%s.values' % honda, fromlist=[attr])
+      car_name = 'honda'
+      values = __import__('selfdrive.car.%s.values' % car_name, fromlist=[attr])
       if hasattr(values, attr):
         attr_values = getattr(values, attr)
       else:
