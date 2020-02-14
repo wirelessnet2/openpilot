@@ -253,9 +253,6 @@ class CarState():
 
     steer_status = self.steer_status_values[cp.vl["STEER_STATUS"]['STEER_STATUS']]
     self.steer_error = steer_status not in ['NORMAL', 'NO_TORQUE_ALERT_1', 'NO_TORQUE_ALERT_2', 'LOW_SPEED_LOCKOUT', 'TMP_FAULT']
-    if self.steer_error:
-      print("printing steer_error")
-      print(steer_status)
     # NO_TORQUE_ALERT_2 can be caused by bump OR steering nudge from driver
     self.steer_not_allowed = steer_status not in ['NORMAL', 'NO_TORQUE_ALERT_2']
     # LOW_SPEED_LOCKOUT is not worth a warning

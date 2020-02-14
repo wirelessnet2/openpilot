@@ -85,6 +85,8 @@ class CarInterface(CarInterfaceBase):
     self.cp = get_can_parser(CP)
     #self.cp_cam = get_cam_can_parser(CP) #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
 
+    self.HzCounter = 0
+
     # *** init the major players ***
     self.CS = CarState(CP)
     self.VM = VehicleModel(CP)
@@ -510,10 +512,14 @@ class CarInterface(CarInterfaceBase):
 
     # events
     events = []
-    if self.CS.steer_error:
-      events.append(create_event('steerUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
+    if self.CS.steer_error: #Clarity: This will allow for steer_error to be true for 3 seconds before displaying a warning. -wirelessnet2
+      self.HzCounter += 1
+      if self.HzCounter > 300:
+        events.append(create_event('steerUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
     elif self.CS.steer_warning:
       events.append(create_event('steerTempUnavailable', [ET.WARNING]))
+    elif not self.CS.steer_error:
+      self.HzCounter = 0
     if self.CS.brake_error:
       events.append(create_event('brakeUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
     if not ret.gearShifter == GearShifter.drive:
