@@ -519,6 +519,7 @@ class CarInterface(CarInterfaceBase):
     elif self.CS.steer_error: #Clarity: This will allow for steer_error to be true for 3 seconds before displaying a warning. -wirelessnet2
       while self.HzCounter < 1000:
         self.HzCounter += 1
+        continue
       if self.HzCounter > 300:
         events.append(create_event('steerUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
     elif self.CS.steer_warning and self.CS.lkMode:
