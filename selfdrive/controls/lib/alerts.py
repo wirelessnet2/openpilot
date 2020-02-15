@@ -109,6 +109,21 @@ ALERTS = [
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .2, .2, .2),
 
   Alert(
+      "manualSteeringRequired",
+      "STEERING REQUIRED: Lane Keeping OFF",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+
+  Alert(
+      "manualSteeringRequiredBlinkersOn",
+      "STEERING REQUIRED: Blinkers ON",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+
+
+  Alert(
       "preDriverDistracted",
       "KEEP EYES ON ROAD: Driver Appears Distracted",
       "",

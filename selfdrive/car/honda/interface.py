@@ -453,6 +453,8 @@ class CarInterface(CarInterfaceBase):
     ret.cruiseState.speedOffset = self.CS.cruise_speed_offset
     ret.cruiseState.standstill = False
 
+    ret.lkMode = self.CS.lkMode
+
     # TODO: button presses
     buttonEvents = []
     ret.leftBlinker = bool(self.CS.left_blinker_on)
@@ -512,7 +514,9 @@ class CarInterface(CarInterfaceBase):
 
     # events
     events = []
-    if self.CS.steer_error: #Clarity: This will allow for steer_error to be true for 3 seconds before displaying a warning. -wirelessnet2
+    if not self.CS.lkMode:
+      events.append(create_event('manualSteeringRequired', [ET.WARNING]))
+    elif self.CS.steer_error: #Clarity: This will allow for steer_error to be true for 3 seconds before displaying a warning. -wirelessnet2
       self.HzCounter += 1
       if self.HzCounter > 300:
         events.append(create_event('steerUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
