@@ -520,7 +520,7 @@ class CarInterface(CarInterfaceBase):
       self.HzCounter += 1
       if self.HzCounter > 300:
         events.append(create_event('steerUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
-    elif self.CS.steer_warning:
+    elif self.CS.steer_warning and self.CS.lkMode:
       events.append(create_event('steerTempUnavailable', [ET.WARNING]))
     elif not self.CS.steer_error:
       self.HzCounter = 0
