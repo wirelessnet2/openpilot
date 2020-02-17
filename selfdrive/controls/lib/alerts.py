@@ -125,7 +125,7 @@ ALERTS = [
   Alert(
       "acceleratorDisabled",
       "COASTING: Computer Acceleration DISABLED",
-      "Restart OpenPilot to Enable",
+      "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
 
