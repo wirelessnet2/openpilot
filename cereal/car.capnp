@@ -94,6 +94,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     driverMonitorLowAcc @68;
     manualSteeringRequired @69;
     manualSteeringRequiredBlinkersOn @70;
+    acceleratorDisabled @71;
   }
 }
 
