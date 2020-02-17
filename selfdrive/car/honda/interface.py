@@ -558,7 +558,7 @@ class CarInterface(CarInterfaceBase):
 
     # it can happen that car cruise disables while comma system is enabled: need to
     # keep braking if needed or if the speed is very low
-    if self.CP.enableCruise and not ret.cruiseState.enabled and self.CP.openpilotLongitudinalControl):
+    if self.CP.enableCruise and not ret.cruiseState.enabled and self.CP.openpilotLongitudinalControl:
       events.append(create_event('acceleratorDisabled', [ET.WARNING]))
 
     cur_time = self.frame * DT_CTRL
