@@ -216,6 +216,8 @@ class CarState():
     self.cruise_mode = 0
     self.stopped = 0
 
+    self.gas_has_been_pressed_since_cruise_off = False
+
     # vEgo kalman filter
     dt = 0.01
     # Q = np.matrix([[10.0, 0.0], [0.0, 100.0]])
@@ -423,12 +425,12 @@ class CarState():
     cruise_off = self.CP.enableCruise and not (self.pcm_acc_status != 0) #Clarity: If the regen paddles are pulled, the PCM stops taking computer_gas requests. -wirelessnet2
 
     if cruise_off and self.pedal_gas > 0:
-      gas_has_been_pressed_since_cruise_off = True
+      self.gas_has_been_pressed_since_cruise_off = True
 
-    if enable_pressed or gas_has_been_pressed_since_cruise_off is None:
-      gas_has_been_pressed_since_cruise_off = False
+    if enable_pressed:
+      self.gas_has_been_pressed_since_cruise_off = False
 
-    if cruise_off and gas_has_been_pressed_since_cruise_off:
+    if cruise_off and self.gas_has_been_pressed_since_cruise_off:
       self.brakeToggle = False
     else:
       self.brakeToggle = True
