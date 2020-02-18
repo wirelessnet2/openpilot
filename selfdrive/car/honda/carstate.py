@@ -373,7 +373,58 @@ class CarState():
         else:
           self.lkMode = True
 
-    if self.CP.enableCruise and self.pcm_acc_status == 0 and self.pedal_gas > 0:
+    buttonEvents = []
+
+    if self.cruise_buttons != self.prev_cruise_buttons: #This code is stolen from interface.py: not sure if this is efficient. -wirelessnet2
+      be = car.CarState.ButtonEvent.new_message()
+      be.type = ButtonType.unknown
+      if self.cruise_buttons != 0:
+        be.pressed = True
+        but = self.cruise_buttons
+      else:
+        be.pressed = False
+        but = self.prev_cruise_buttons
+      if but == CruiseButtons.RES_ACCEL:
+        be.type = ButtonType.accelCruise
+      elif but == CruiseButtons.DECEL_SET:
+        be.type = ButtonType.decelCruise
+      elif but == CruiseButtons.CANCEL:
+        be.type = ButtonType.cancel
+      elif but == CruiseButtons.MAIN:
+        be.type = ButtonType.altButton3
+      buttonEvents.append(be)
+
+    if self.cruise_setting != self.prev_cruise_setting:
+      be = car.CarState.ButtonEvent.new_message()
+      be.type = ButtonType.unknown
+      if self.cruise_setting != 0:
+        be.pressed = True
+        but = self.cruise_setting
+      else:
+        be.pressed = False
+        but = self.prev_cruise_setting
+      if but == 1:
+        be.type = ButtonType.altButton1
+      # TODO: more buttons?
+      buttonEvents.append(be)
+
+    enable_pressed = False
+    for b in buttonEvents:
+      
+      # do enable on both accel and decel buttons
+      if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and not b.pressed:
+        enable_pressed = True
+
+
+    cruise_off = self.CP.enableCruise and not ret.cruiseState.enabled #Clarity: If the regen paddles are pulled, the PCM stops taking computer_gas requests. -wirelessnet2
+
+    if cruise_off and self.pedal_gas > 0:
+      gas_has_been_pressed_since_cruise_off = True
+
+    if enable_pressed:
+      gas_has_been_pressed_since_cruise_off = False
+
+    if self.CP.enableCruise and self.pcm_acc_status == 0 and gas_has_been_pressed_since_cruise_off:
       self.brakeToggle = False
     else:
       self.brakeToggle = True

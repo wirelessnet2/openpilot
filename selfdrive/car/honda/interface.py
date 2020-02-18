@@ -563,7 +563,7 @@ class CarInterface(CarInterfaceBase):
     # it can happen that car cruise disables while comma system is enabled: need to
     # keep braking if needed or if the speed is very low
 
-    if cruise_off and not self.CS.brakeToggle:
+    if cruise_off and not self.CS.brakeToggle: #If PCM is not taking computer_gas requests and user has pressed the gas pedal (which disables braking) -wirelessnet2
       events.append(create_event('lkasOnly', [ET.WARNING]))
     elif cruise_off:
       events.append(create_event('acceleratorDisabled', [ET.WARNING]))
