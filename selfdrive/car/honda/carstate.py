@@ -420,7 +420,7 @@ class CarState():
         enable_pressed = True
 
 
-    cruise_off = self.CP.enableCruise and not ret.cruiseState.enabled #Clarity: If the regen paddles are pulled, the PCM stops taking computer_gas requests. -wirelessnet2
+    cruise_off = self.CP.enableCruise and not (self.pcm_acc_status != 0) #Clarity: If the regen paddles are pulled, the PCM stops taking computer_gas requests. -wirelessnet2
 
     if cruise_off and self.pedal_gas > 0:
       gas_has_been_pressed_since_cruise_off = True

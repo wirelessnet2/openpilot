@@ -132,8 +132,8 @@ ALERTS = [
   Alert(
       "lkasOnly",
       "Computer Acceleration and Brake DISABLED",
-      "",
-      AlertStatus.normal, AlertSize.small,
+      "BRAKING REQUIRED",
+      AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
       
   Alert(
