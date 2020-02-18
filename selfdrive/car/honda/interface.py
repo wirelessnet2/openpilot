@@ -194,7 +194,7 @@ class CarInterface(CarInterfaceBase):
       ret.centerToFront = ret.wheelbase * 0.4
       ret.steerRatio = 16.00  # was 17.03, 12.72 is end-to-end spec
       if eps_modified:
-        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0x0, 0x580, 0xA00, 0xD00, 0xF00, 0x10C0, 0x11FF, 0x1300, 0x2800],  [0x0, 0x100, 0x200, 0x301, 0x3FF, 0x5FF, 0x800, 0x9FE, 0xF00]]
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0x0, 0x580, 0xA00, 0xD00, 0xF00, 0x10C0, 0x11FF, 0x1300, 0x2800], [0x0, 0x100, 0x200, 0x301, 0x3FF, 0x5FF, 0x800, 0x9FE, 0xF00]]
         ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.4], [0.12]]
       else:
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0x0, 0x580, 0xA00, 0xD00, 0xF00, 0x10C0, 0x11FF, 0x1300, 0x1400], [0x0, 0x100, 0x200, 0x301, 0x3FF, 0x5FF, 0x800, 0x9FE, 0xF00]]
@@ -454,6 +454,7 @@ class CarInterface(CarInterfaceBase):
     ret.cruiseState.standstill = False
 
     ret.lkMode = self.CS.lkMode
+    ret.brakeToggle = self.brakeToggle
 
     # TODO: button presses
     buttonEvents = []
@@ -547,10 +548,13 @@ class CarInterface(CarInterfaceBase):
 
     if self.CP.enableCruise and ret.vEgo < self.CP.minEnableSpeed:
       events.append(create_event('speedTooLow', [ET.NO_ENTRY]))
+    
+    cruise_off = (self.CP.enableCruise and not ret.cruiseState.enabled) #Clarity: If the regen paddles are pulled, the PCM stops taking computer_gas requests. -wirelessnet2
 
     # disable on pedals rising edge or when brake is pressed and speed isn't zero
-    if (ret.gasPressed and not self.gas_pressed_prev) or \
-       (ret.brakePressed and (not self.brake_pressed_prev or ret.vEgo > 0.001)):
+    if (ret.brakePressed and (not self.brake_pressed_prev or ret.vEgo > 0.001)):
+      events.append(create_event('pedalPressed', [ET.NO_ENTRY, ET.USER_DISABLE]))
+    if not cruise_off and (ret.gasPressed and not self.gas_pressed_prev):
       events.append(create_event('pedalPressed', [ET.NO_ENTRY, ET.USER_DISABLE]))
 
     if ret.gasPressed:
@@ -558,7 +562,10 @@ class CarInterface(CarInterfaceBase):
 
     # it can happen that car cruise disables while comma system is enabled: need to
     # keep braking if needed or if the speed is very low
-    if self.CP.enableCruise and not ret.cruiseState.enabled and self.CP.openpilotLongitudinalControl:
+
+    if cruise_off and not self.CS.brakeToggle:
+      events.append(create_event('LKASOnly', [ET.WARNING]))
+    elif cruise_off:
       events.append(create_event('acceleratorDisabled', [ET.WARNING]))
 
     cur_time = self.frame * DT_CTRL

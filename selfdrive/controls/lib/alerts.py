@@ -124,11 +124,18 @@ ALERTS = [
 
   Alert(
       "acceleratorDisabled",
-      "COASTING: Computer Acceleration DISABLED",
+      "Computer Acceleration DISABLED",
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
 
+  Alert(
+      "LKASOnly",
+      "Computer Acceleration and Brake DISABLED",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+      
   Alert(
       "preDriverDistracted",
       "KEEP EYES ON ROAD: Driver Appears Distracted",

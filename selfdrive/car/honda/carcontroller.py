@@ -139,6 +139,7 @@ class CarController():
     apply_steer = int(interp(-actuators.steer * P.STEER_MAX, P.STEER_LOOKUP_BP, P.STEER_LOOKUP_V))
 
     lkas_active = enabled and not CS.steer_not_allowed and CS.lkMode
+    brake_active = CS.brakeToggle
 
     # Send CAN commands.
     can_sends = []

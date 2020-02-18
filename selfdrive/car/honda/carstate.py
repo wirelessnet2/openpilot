@@ -195,6 +195,7 @@ def get_cam_can_parser(CP):
 class CarState():
   def __init__(self, CP):
     self.lkMode = True
+    self.brakeToggle = True
     self.CP = CP
     self.can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
     self.shifter_values = self.can_define.dv["GEARBOX"]["GEAR_SHIFTER"]
@@ -371,6 +372,11 @@ class CarState():
           self.lkMode = False
         else:
           self.lkMode = True
+
+    if self.CP.enableCruise and self.pcm_acc_status == 0 and self.pedal_gas > 0:
+      self.brakeToggle = False
+    else:
+      self.brakeToggle = True
 
     self.prev_cruise_setting = self.cruise_setting
     self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
