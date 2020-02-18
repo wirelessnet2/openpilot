@@ -454,7 +454,7 @@ class CarInterface(CarInterfaceBase):
     ret.cruiseState.standstill = False
 
     ret.lkMode = self.CS.lkMode
-    ret.brakeToggle = self.brakeToggle
+    ret.brakeToggle = self.CS.brakeToggle
 
     # TODO: button presses
     buttonEvents = []
