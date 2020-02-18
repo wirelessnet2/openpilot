@@ -95,7 +95,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     manualSteeringRequired @69;
     manualSteeringRequiredBlinkersOn @70;
     acceleratorDisabled @71;
-    LKASOnly @72;
+    lkasOnly @72;
   }
 }
 

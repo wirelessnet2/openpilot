@@ -564,7 +564,7 @@ class CarInterface(CarInterfaceBase):
     # keep braking if needed or if the speed is very low
 
     if cruise_off and not self.CS.brakeToggle:
-      events.append(create_event('LKASOnly', [ET.WARNING]))
+      events.append(create_event('lkasOnly', [ET.WARNING]))
     elif cruise_off:
       events.append(create_event('acceleratorDisabled', [ET.WARNING]))
 
