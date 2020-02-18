@@ -124,17 +124,17 @@ ALERTS = [
 
   Alert(
       "acceleratorDisabled",
-      "Computer Acceleration DISABLED",
+      "Computer Accel DISABLED",
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+      Priority.LOW_LOWEST, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
 
   Alert(
       "lkasOnly",
-      "Computer Acceleration and Brake DISABLED",
-      "BRAKING REQUIRED",
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+      "Computer Accel and Brake DISABLED",
+      "",
+      AlertStatus.userPrompt, AlertSize.small,
+      Priority.LOW_LOWEST, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
       
   Alert(
       "preDriverDistracted",
