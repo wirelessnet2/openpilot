@@ -5,7 +5,7 @@ from common.kalman.simple_kalman import KF1D
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from selfdrive.config import Conversions as CV
-from selfdrive.car.honda.values import CAR, DBC, STEER_THRESHOLD, SPEED_FACTOR, HONDA_BOSCH
+from selfdrive.car.honda.values import CAR, DBC, STEER_THRESHOLD, SPEED_FACTOR, HONDA_BOSCH, CruiseButtons
 
 GearShifter = car.CarState.GearShifter
 
@@ -375,6 +375,7 @@ class CarState():
         else:
           self.lkMode = True
 
+    ButtonType = car.CarState.ButtonEvent.Type
     buttonEvents = []
 
     if self.cruise_buttons != self.prev_cruise_buttons: #This code is stolen from interface.py: not sure if this is efficient. -wirelessnet2
