@@ -394,6 +394,8 @@ class CarState():
         be.type = ButtonType.altButton3
       buttonEvents.append(be)
 
+    self.prev_cruise_setting = self.cruise_setting
+
     if self.cruise_setting != self.prev_cruise_setting:
       be = car.CarState.ButtonEvent.new_message()
       be.type = ButtonType.unknown
@@ -407,6 +409,8 @@ class CarState():
         be.type = ButtonType.altButton1
       # TODO: more buttons?
       buttonEvents.append(be)
+
+    self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
 
     enable_pressed = False
     for b in buttonEvents:
@@ -428,9 +432,6 @@ class CarState():
       self.brakeToggle = False
     else:
       self.brakeToggle = True
-
-    self.prev_cruise_setting = self.cruise_setting
-    self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
 
     # TODO: discover the CAN msg that has the imperial unit bit for all other cars
     self.is_metric = not cp.vl["HUD_SETTING"]['IMPERIAL_UNIT'] if self.CP.carFingerprint in (CAR.CIVIC) else False
