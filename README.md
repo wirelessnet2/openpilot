@@ -1,3 +1,61 @@
+Hi! Welcome to wirelessnet2's 0.7.2_TESTING branch. This branch is based on Clarity_0.7.2, which is just stock openpilot with just enough code to make it run on the Honda Clarity. Here are some features included in the Plus branch:
+
+* Torque Request Interpolation: This is more important for people with modded EPS FWs, as this allows OpenPilot to more precisely contol the amount of torque the EPS motor is outputting. However, this will still improve steering performance on cars without modded firmwares.
+
+* Dynamic Steer Ratio: The car has something called a Variable Gear Ratio (VGR) steering rack, and it is configured such that the steer ratio is high when the steer angle is close to 0 degrees, but decreases as the steer angle rises. This allows for precise steering control for car maneuvers when the steering angle is near 0 degrees but reduces the number of times the wheel needs to turn from lock to lock. With this feature, OpenPilot now recognizes that the Steer Ratio will change as the steer angle does and will compensate for it, improving steering performance.
+
+* Fingerprinting V2 Support for all Pandas: With comma official software, Fingerprinting V2 (which is basically ECU FW-based vehicle identification) only works on the Black Panda and Uno. The fingerprinting process also takes about 5-10 seconds to finish, which is long enough that the Clarity will throw out ACC and LKAS errors. I've greatly sped up the Fingerprinting process (it now takes less than a second), and I've also brought Fingerprinting V2 support to White and Grey pandas. This is great because we can now check for a modded EPS FW and automatically apply the correct tuning if a modded EPS is detected. 
+
+* Dev UI: The onroad UI will now display useful parameters like [Radar: Relative Distance and Relative Speed], [Steering: Real Steering Angle and OpenPilot Desired Steering Angle], [Device: CPU Temperature], [GPS: GPS Precision], and [Car: Engine RPM and If the Brakes are Being Applied].
+
+* Screen Recorder: If the car is traveling above 8mph and the user has pressed the REC button (bottom right of screen), a recording of the screen will be saved to /sdcard/videos. This also records the UI elements (such as the Dev UI information). This feature can be used as a dashcam, to make cool videos, etc...
+
+* Steering Disable Mode: The functionality of the LKAS button on the steering wheel has been implemented: Press the LKAS button to disable steering, and press it again to re-enable steering. This allows you use OpenPilot as ACC only. 
+
+* Coast/Pass Mode: If OpenPilot is engaged and one of the regen paddles on the steering wheel is pulled, the system will stop accelerating but will continue to brake and steer. This is useful if you know you will have to stop (for example a red light or stop sign) but don't want to disengage. With thise mode you can allow the car to regenerate electricity into the battery while it continues to steer and brake for cars in front of you. While in coast mode, if the user depresses the gas pedal, the system will stop accelerating AND braking. This mode is useful for passing a slower vehicle: OpenPilot can continue to steer (and assist with lane changes) while the user can accelerate independently of OpenPilot. Once Pass mode is activated, OpenPilot will not brake until it is re-engaged. Simply press the RESUME button on the steering wheel to fully re-engage OpenPilot. Also please note that after a regen paddle has been pulled and OpenPilot enters Coast/Pass mode, it will NO LONGER disengage on the gas pedal. However, the Brake Pedal, the Main Button, and the Cancel Button will ALWAYS disengage OpenPilot.
+
+* The EON battery has been limited to a charge of 70% to prolong the life of the battery and improve safety.
+
+* Bug Fixes from Stock: OpenPilot will no longer display the "LKAS Fault: Please Restart Car" when the car is turned on or off.
+
+* Fan Noise Reduction: The Comma Two fan speed has been tuned to keep the CPU slightly warmer than the stock fan curve, greatly reducing nosie.
+
+* The "No Internet Connectivity" alert has been set to trigger at one year without internet connectivity (up from 7 days)
+
+* The Minimum Speed for OpenPilot's Assisted Lane Change featue has been reduced to 35mph from 45mph
+
+* 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 [![](https://i.imgur.com/UelUjKAh.png)](#)
 
 Table of Contents
