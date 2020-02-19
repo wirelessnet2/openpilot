@@ -218,7 +218,8 @@ class CarState():
 
     self.cruise_off = False
     self.gas_has_been_pressed_since_cruise_off = False
-    self.openpilotHasBeenEngaged = False
+    self.pcm_acc_status_prev = 0
+    self.openpilotEngagedWithGasDepressed = False
 
     # vEgo kalman filter
     dt = 0.01
@@ -424,15 +425,21 @@ class CarState():
 
     self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
 
-    if not self.CP.enableCruise:
-      self.openpilotHasBeenEngaged = False
-
-    if self.CP.enableCruise and self.pcm_acc_status != 0:
-        self.openpilotHasBeenEngaged = True
+    if self.pedal_gas > 0:
+      if self.pcm_acc_status != self.pcm_acc_status_prev:
+        if self.pcm_acc_status == 1.0: #pcm_acc_status = 1 is engaged. -wirelessnet2
+          self.openpilotEngagedWithGasDepressed = True
 
     self.cruise_off = self.CP.enableCruise and self.pcm_acc_status == 0 #Clarity: If the regen paddles are pulled, the PCM stops taking computer_gas requests. -wirelessnet2
 
-    if self.cruise_off and self.pedal_gas > 0 and self.openpilotHasBeenEngaged:
+    if self.pcm_acc_status == 0:
+      self.openpilotEngagedWithGasDepressed = False
+
+    if not self.cruise_off and self.openpilotEngagedWithGasDepressed:
+      self.gas_has_been_pressed_since_cruise_off = False
+      self.openpilotEngagedWithGasDepressed = False
+
+    if self.cruise_off and self.pedal_gas > 0:
       self.gas_has_been_pressed_since_cruise_off = True
 
     if enable_pressed:
@@ -442,6 +449,8 @@ class CarState():
       self.brakeToggle = False
     else:
       self.brakeToggle = True
+
+    self.pcm_acc_status_prev = self.pcm_acc_status
 
     # TODO: discover the CAN msg that has the imperial unit bit for all other cars
     self.is_metric = not cp.vl["HUD_SETTING"]['IMPERIAL_UNIT'] if self.CP.carFingerprint in (CAR.CIVIC) else False
