@@ -24,8 +24,6 @@ Hi! Welcome to wirelessnet2's 0.7.2_TESTING branch. This branch is based on Clar
 
 * The Minimum Speed for OpenPilot's Assisted Lane Change featue has been reduced to 35mph from 45mph
 
-* 
-
 
 
 
