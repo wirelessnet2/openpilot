@@ -159,9 +159,7 @@ struct CarState {
   readdistancelines @32 :Float32;
   lkMode @35 :Bool;
   brakeToggle @36 :Bool;
-  engineRPM @37 :Float32;
-  odometer @38 :Float32;
-  tripDistance @39 :Float32;
+
 
 
   # which packets this state came from
