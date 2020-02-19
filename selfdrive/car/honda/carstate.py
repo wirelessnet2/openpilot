@@ -216,7 +216,9 @@ class CarState():
     self.cruise_mode = 0
     self.stopped = 0
 
+    self.cruise_off = False
     self.gas_has_been_pressed_since_cruise_off = False
+    self.openpilotHasBeenEngaged = False
 
     # vEgo kalman filter
     dt = 0.01
@@ -413,8 +415,6 @@ class CarState():
       # TODO: more buttons?
       buttonEvents.append(be)
 
-    self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
-
     enable_pressed = False
     for b in buttonEvents:
       
@@ -422,16 +422,23 @@ class CarState():
       if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and not b.pressed:
         enable_pressed = True
 
+    self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
 
-    cruise_off = self.CP.enableCruise and not (self.pcm_acc_status != 0) #Clarity: If the regen paddles are pulled, the PCM stops taking computer_gas requests. -wirelessnet2
+    if not self.CP.enableCruise:
+      self.openpilotHasBeenEngaged = False
 
-    if cruise_off and self.pedal_gas > 0:
+    if self.CP.enableCruise and self.pcm_acc_status != 0:
+        self.openpilotHasBeenEngaged = True
+
+    self.cruise_off = self.CP.enableCruise and self.pcm_acc_status == 0 #Clarity: If the regen paddles are pulled, the PCM stops taking computer_gas requests. -wirelessnet2
+
+    if self.cruise_off and self.pedal_gas > 0 and self.openpilotHasBeenEngaged:
       self.gas_has_been_pressed_since_cruise_off = True
 
     if enable_pressed:
       self.gas_has_been_pressed_since_cruise_off = False
 
-    if cruise_off and self.gas_has_been_pressed_since_cruise_off:
+    if self.cruise_off and self.gas_has_been_pressed_since_cruise_off:
       self.brakeToggle = False
     else:
       self.brakeToggle = True
