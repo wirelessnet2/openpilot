@@ -1,4 +1,8 @@
 #include <assert.h>
+#include <sys/types.h>//clarity-bru: files
+#include <sys/stat.h>//clarity-bru: files
+#include <string.h>//clarity-bru: strcpy
+#include <unistd.h>//clarity-bru: files
 #include "ui.hpp"
 
 #include "common/util.h"
@@ -11,6 +15,7 @@
 extern "C"{
 #include "common/glutil.h"
 }
+bool isEngineOn = 0;
 
 // TODO: this is also hardcoded in common/transformations/camera.py
 const mat3 intrinsic_matrix = (mat3){{
@@ -915,6 +920,82 @@ static void bb_ui_draw_measures_left(UIState *s, int bb_x, int bb_y, int bb_w ) 
       value_fontSize, label_fontSize, uom_fontSize );
     bb_ry = bb_y + bb_h;
   }
+  
+  
+    //CPU TEMP
+    if (true) {
+    char val_str[16];
+    char uom_str[6];
+    NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
+
+    char cpu_temp[5];
+    int fd;
+
+    //Read the file with the CPU temp.  1 is equal to .1 degree Celius.
+    fd = open("/sys/class/thermal/thermal_zone6/temp", O_RDONLY);
+    if(fd == -1)
+    {
+    //can't open
+    }
+    else
+    {
+      read(fd, &cpu_temp, 4);
+    }
+  
+  
+    cpu_temp[2] = '\0';
+    close(fd);
+  
+      // temp is alway in C * 10
+      snprintf(val_str, sizeof(val_str), "%s°C", (cpu_temp));
+      snprintf(uom_str, sizeof(uom_str), "");
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "CPU TEMP",
+        bb_rx, bb_ry, bb_uom_dx,
+        val_color, lab_color, uom_color,
+        value_fontSize, label_fontSize, uom_fontSize );
+    bb_ry = bb_y + bb_h;
+  }
+  
+  //add grey panda GPS accuracy
+  if (true) {
+    char val_str[16];
+    char uom_str[3];
+    NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
+    //show red/orange if gps accuracy is high
+      if(scene->gpsAccuracyUblox > 0.59) {
+         val_color = nvgRGBA(255, 188, 3, 200);
+      }
+      if(scene->gpsAccuracyUblox > 0.8) {
+         val_color = nvgRGBA(255, 0, 0, 200);
+      }
+    // gps accuracy is always in meters
+    snprintf(val_str, sizeof(val_str), "%.2f", (s->scene.gpsAccuracyUblox));
+    snprintf(uom_str, sizeof(uom_str), "m");;
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "GPS PREC",
+        bb_rx, bb_ry, bb_uom_dx,
+        val_color, lab_color, uom_color,
+        value_fontSize, label_fontSize, uom_fontSize );
+    bb_ry = bb_y + bb_h;
+  }
+  
+    //engineRPM
+  if (true) {
+    char val_str[16];
+    char uom_str[4];
+    NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
+    snprintf(val_str, sizeof(val_str), "%d", (s->scene.engineRPM));
+    snprintf(uom_str, sizeof(uom_str), "%d", engineOnCount);
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "ENG RPM",
+        bb_rx, bb_ry, bb_uom_dx,
+        val_color, lab_color, uom_color,
+        value_fontSize, label_fontSize, uom_fontSize );
+    bb_ry = bb_y + bb_h;
+  }
+  
+  
+  
+  
+  
   
 
   //finally draw the frame

@@ -114,6 +114,7 @@ static void ui_init(UIState *s) {
   s->radarstate_sock = SubSocket::create(s->ctx, "radarState");
   //s->thermal_sock = SubSocket::create(s->ctx, "thermal");
   s->carstate_sock = SubSocket::create(s->ctx, "carState");
+  s->gpslocationexternal_sock = SubSocket::create(s->ctx, "gpsLocationExternal");
 
   assert(s->model_sock != NULL);
   assert(s->controlsstate_sock != NULL);
@@ -122,6 +123,7 @@ static void ui_init(UIState *s) {
   assert(s->radarstate_sock != NULL);
   //assert(s->thermal_sock != NULL);
   assert(s->carstate_sock != NULL);
+  assert(s->gpslocationexternal_sock != NULL);
 
   s->poller = Poller::create({
                               s->model_sock,
@@ -129,7 +131,8 @@ static void ui_init(UIState *s) {
                               s->uilayout_sock,
                               s->livecalibration_sock,
                               s->radarstate_sock,
-	                            s->carstate_sock
+                              s->carstate_sock,
+	                            s->gpslocationexternal_sock
                              });
 
   /*
@@ -451,10 +454,29 @@ void handle_message(UIState *s, Message * msg) {
 
   //  s->scene.pa0 = datad.pa0;
   //  s->scene.freeSpace = datad.freeSpace;
+  //GPS from cell phone, not ublox.
+
+} else if (eventd.which == cereal_Event_gpsLocationExternal) {
+    struct cereal_GpsLocationData datad;
+    cereal_read_GpsLocationData(&datad, eventd.gpsLocationExternal);
+    s->scene.gpsAccuracyUblox = datad.accuracy;
+    if (s->scene.gpsAccuracyUblox > 100)
+    {
+      s->scene.gpsAccuracyUblox = 99.99;
+    }
+    else if (s->scene.gpsAccuracyUblox == 0)
+    {
+      s->scene.gpsAccuracyUblox = 99.8;
+    }
+
+
   } else if (eventd.which == cereal_Event_carState) {
     struct cereal_CarState datad;
     cereal_read_CarState(&datad, eventd.carState);
     s->scene.brakeLights = datad.brakeLights;
+    s->scene.engineRPM = datad.engineRPM;
+    s->scene.odometer = datad.odometer;
+    s->scene.tripDistance = datad.tripDistance;
   }
   capn_free(&ctx);
 }
