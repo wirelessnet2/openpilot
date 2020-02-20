@@ -972,10 +972,10 @@ static void bb_ui_draw_measures_left(UIState *s, int bb_x, int bb_y, int bb_w ) 
          val_color = nvgRGBA(255, 0, 0, 200);
       }
     // gps accuracy is always in meters
-    if(scene->gpsAccuracy > 99.97) {
+    if(scene->gpsAccuracyUblox > 99.97) {
        snprintf(val_str, sizeof(val_str), "NO GPS");
     }else{
-      snprintf(val_str, sizeof(val_str), "%.2f", (s->scene.gpsAccuracy));
+      snprintf(val_str, sizeof(val_str), "%.2f", (s->scene.gpsAccuracyUblox));
     }
     snprintf(uom_str, sizeof(uom_str), "m");
     bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "GPS PREC",
