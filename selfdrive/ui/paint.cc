@@ -960,7 +960,7 @@ static void bb_ui_draw_measures_left(UIState *s, int bb_x, int bb_y, int bb_w ) 
   }
   
   //add grey panda GPS accuracy
-  if (true) {
+  if (scene->gpsAccuracyUblox != 0.00) {
     char val_str[16];
     char uom_str[3];
     NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
@@ -973,7 +973,7 @@ static void bb_ui_draw_measures_left(UIState *s, int bb_x, int bb_y, int bb_w ) 
       }
     // gps accuracy is always in meters
     if(scene->gpsAccuracyUblox > 99.97) {
-       snprintf(val_str, sizeof(val_str), "NO GPS");
+       snprintf(val_str, sizeof(val_str), "None");
     }else{
       snprintf(val_str, sizeof(val_str), "%.2f", (s->scene.gpsAccuracyUblox));
     }
