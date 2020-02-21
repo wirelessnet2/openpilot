@@ -176,6 +176,9 @@ def state_transition(frame, CS, CP, state, events, soft_disable_timer, v_cruise_
       for e in get_events(events, [ET.SOFT_DISABLE]):
         AM.add(frame, e, enabled)
 
+    elif get_events(events, [ET.PRE_ENABLE]):
+      state = State.preEnabled
+
   # SOFT DISABLING
   elif state == State.softDisabling:
     if get_events(events, [ET.USER_DISABLE]):
