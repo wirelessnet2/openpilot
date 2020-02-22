@@ -616,7 +616,7 @@ class CarInterface(CarInterfaceBase):
     else:
       hud_v_cruise = 255
 
-    pcm_accel = int(clip(c.cruiseControl.accelOverride, 0, 1) * 0xc6)
+    pcm_accel = int(clip(c.cruiseControl.accelOverride, 0, 1) * 0xc6) if self.CS.gasToggle else 0
 
     can_sends = self.CC.update(c.enabled, self.CS, self.frame,
                                c.actuators,
