@@ -459,13 +459,15 @@ class CarState():
     if self.cruise_off and self.gas_has_been_pressed_since_cruise_off:
       self.brakeToggle = False
 
+    if not self.brakeToggle and self.pedal_gas > 0 and enable_pressed:
+      self.gasToggle 
+
     while self.pedal_gas > 0 and not self.brakeToggle:
       if self.pcm_acc_status == 1:
         self.gasToggle = False
     else: 
       self.gasToggle = True
-      if not (self.cruise_off and self.gas_has_been_pressed_since_cruise_off):
-        self.brakeToggle = True
+      self.brakeToggle = True
 
     self.pcm_acc_status_prev = self.pcm_acc_status
 
