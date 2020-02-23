@@ -63,13 +63,8 @@ def only_toyota_left(candidate_cars):
 
 # **** for use live only ****
 def fingerprint(logcan, sendcan, has_relay): #I reworked a good portion of fingerprint code to MASSIVELY SPEED UP GET_FW_VERSIONS() and bring fingerprinting v2 and eps_modified detection to non-relay pandas and comma power-less relay panda installs. -wirelessnet2
-  if has_relay:
-    # Vin query only reliably works thorugh OBDII
-    bus = 1
-    _, vin = get_vin(logcan, sendcan, bus)
-  else:
-    vin = VIN_UNKNOWN
-
+  vin = VIN_UNKNOWN
+  
   bus = 2
   car_fw = get_fw_versions(logcan, sendcan, bus)
   fw_candidates = match_fw_to_car(car_fw)
