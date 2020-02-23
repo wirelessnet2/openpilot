@@ -468,7 +468,7 @@ class CarState():
       self.brakeToggle = False
       self.gasToggle = False
 
-    if not self.brakeToggle and not self.gasToggle and not self.cruise_off:
+    if not self.brakeToggle and not self.gasToggle and self.pedal_gas > 0:
       if enable_pressed:
         self.preEnableAlert = True
 
