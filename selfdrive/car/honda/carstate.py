@@ -199,6 +199,7 @@ class CarState():
   def __init__(self, CP):
     self.lkMode = True
     self.brakeToggle = True
+    self.gasToggle = True
     self.CP = CP
     self.can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
     self.shifter_values = self.can_define.dv["GEARBOX"]["GEAR_SHIFTER"]
@@ -457,8 +458,11 @@ class CarState():
 
     if self.cruise_off and self.gas_has_been_pressed_since_cruise_off:
       self.brakeToggle = False
-    else:
+      self.gasToggle = False
+
+    if not self.cruise_off and not self.gas_has_been_pressed_since_cruise_off and self.pedal_gas == 0:
       self.brakeToggle = True
+      self.gasToggle = True
 
     self.pcm_acc_status_prev = self.pcm_acc_status
 
