@@ -228,6 +228,7 @@ class CarState():
     self.gas_has_been_pressed_since_cruise_off = False
     self.pcm_acc_status_prev = 0
     self.openpilotEngagedWithGasDepressed = False
+    self.preEnableAlert = False
 
     # vEgo kalman filter
     dt = 0.01
@@ -434,6 +435,13 @@ class CarState():
       if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and not b.pressed:
         enable_pressed = True
 
+      if (b.type == "cancel" and b.pressed) or self.brake_pressed or not self.main_on:
+        self.gasToggle = True
+        self.brakeToggle = True
+        self.openpilotEngagedWithGasDepressed = False
+        self.gas_has_been_pressed_since_cruise_off = False
+        self.preEnableAlert = False
+
     self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
 
     if self.pedal_gas > 0:
@@ -460,9 +468,14 @@ class CarState():
       self.brakeToggle = False
       self.gasToggle = False
 
-    if not self.cruise_off and not self.gas_has_been_pressed_since_cruise_off and self.pedal_gas == 0:
+    if not self.brakeToggle and not self.gasToggle and not self.cruise_off:
+      if enable_pressed:
+        self.preEnableAlert = True
+
+    if not self.cruise_off and self.pedal_gas == 0:
       self.brakeToggle = True
       self.gasToggle = True
+      self.preEnableAlert = False
 
     self.pcm_acc_status_prev = self.pcm_acc_status
 
