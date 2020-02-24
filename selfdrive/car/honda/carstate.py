@@ -30,6 +30,9 @@ def get_can_signals(CP):
 # this function generates lists for signal, messages and initial values
   signals = [
       ("XMISSION_SPEED", "ENGINE_DATA", 0),
+      ("ENGINE_RPM", "POWERTRAIN_DATA", 0),
+      ("ODOMETER", "XXX_27", 0),
+      ("ODOMETER", "ENGINE_DATA", 0),
       ("WHEEL_SPEED_FL", "WHEEL_SPEEDS", 0),
       ("WHEEL_SPEED_FR", "WHEEL_SPEEDS", 0),
       ("WHEEL_SPEED_RL", "WHEEL_SPEEDS", 0),
@@ -214,6 +217,10 @@ class CarState():
     self.left_blinker_on = 0
     self.right_blinker_on = 0
 
+    self.engineRPM = 0
+    self.odometer = 0
+    self.tripDistance = 0
+
     self.cruise_mode = 0
     self.stopped = 0
 
@@ -309,6 +316,9 @@ class CarState():
     self.left_blinker_on = cp.vl["SCM_FEEDBACK"]['LEFT_BLINKER']
     self.right_blinker_on = cp.vl["SCM_FEEDBACK"]['RIGHT_BLINKER']
     self.brake_hold = cp.vl["VSA_STATUS"]['BRAKE_HOLD_ACTIVE']
+    self.engineRPM = cp.vl["POWERTRAIN_DATA"]['ENGINE_RPM']
+    self.odometer = cp.vl["XXX_27"]['ODOMETER']
+    self.tripDistance = cp.vl["ENGINE_DATA"]['ODOMETER']
 
     if self.CP.carFingerprint in (CAR.CIVIC, CAR.ODYSSEY, CAR.CRV_5G, CAR.ACCORD, CAR.ACCORD_15, CAR.ACCORDH, CAR.CIVIC_BOSCH, CAR.CRV_HYBRID, CAR.CLARITY): #Clarity
       self.park_brake = cp.vl["EPB_STATUS"]['EPB_STATE'] != 0
