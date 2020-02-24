@@ -34,9 +34,11 @@ def make_can_msg(addr, dat, idx, alt):
   return [addr, 0, dat, alt]
 
 #Clarity
-def create_brake_command(packer, apply_brake, pcm_override, pcm_cancel_cmd, fcw, idx, car_fingerprint, has_relay, stock_brake):
+def create_brake_command(packer, apply_brake, pcm_override, pcm_cancel_cmd, fcw, idx, car_fingerprint, has_relay, stock_brake, brake_active):
   # TODO: do we loose pressure if we keep pump off for long?
   commands = [] #Clarity
+  if not brake_active:
+    apply_brake = 0
   pump_on = apply_brake > 0 #Clarity
   brakelights = apply_brake > 0
   brake_rq = apply_brake > 0

@@ -134,11 +134,12 @@ class CarController():
     # **** process the car messages ****
 
     # steer torque is converted back to CAN reference (positive when steering right)
-    apply_gas = clip(actuators.gas, 0., 1.)
+    apply_gas = clip(actuators.gas, 0., 1.) if CS.gasToggle else 0
     apply_brake = int(clip(self.brake_last * P.BRAKE_MAX, 0, P.BRAKE_MAX - 1))
     apply_steer = int(interp(-actuators.steer * P.STEER_MAX, P.STEER_LOOKUP_BP, P.STEER_LOOKUP_V))
 
     lkas_active = enabled and not CS.steer_not_allowed and CS.lkMode
+    brake_active = CS.brakeToggle
 
     # Send CAN commands.
     can_sends = []
@@ -167,7 +168,7 @@ class CarController():
         ts = frame * DT_CTRL
         #pump_on, self.last_pump_ts = brake_pump_hysteresis(apply_brake, self.apply_brake_last, self.last_pump_ts, ts) #Clarity
         can_sends.extend(hondacan.create_brake_command(self.packer, apply_brake,
-          pcm_override, pcm_cancel_cmd, hud.fcw, idx, CS.CP.carFingerprint, CS.CP.isPandaBlack, CS.stock_brake))
+          pcm_override, pcm_cancel_cmd, hud.fcw, idx, CS.CP.carFingerprint, CS.CP.isPandaBlack, CS.stock_brake, brake_active))
         #self.apply_brake_last = apply_brake #Clarity
 
         if CS.CP.enableGasInterceptor:
