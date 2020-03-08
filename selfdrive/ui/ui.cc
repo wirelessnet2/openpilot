@@ -477,10 +477,7 @@ void handle_message(UIState *s, Message * msg) {
     {
       s->scene.gpsAccuracyUblox = 99.99;
     }
-    else if (s->scene.gpsAccuracyUblox == 0)
-    {
-      s->scene.gpsAccuracyUblox = 99.8;
-    }
+    s->scene.altitudeUblox = datad.altitude;
 
   } else if (eventd.which == cereal_Event_carState) {
     struct cereal_CarState datad;

@@ -154,6 +154,7 @@ typedef struct UIScene {
 
 
   float gpsAccuracyUblox;
+  float altitudeUblox;
 
 } UIScene;
 
