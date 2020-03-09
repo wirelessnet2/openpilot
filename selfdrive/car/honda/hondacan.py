@@ -60,7 +60,7 @@ def create_brake_command(packer, apply_brake, pcm_override, pcm_cancel_cmd, fcw,
     "COMPUTER_BRAKE_REQUEST": brake_rq,
     "SET_ME_1": 1,
     "BRAKE_LIGHTS": brakelights,
-    "CHIME": stock_brake["CHIME"] if fcw else 0,  # send the chime for stock fcw
+    "CHIME": 2 if fcw else 0,  #Clarity: MUST NOT CALL ON STOCK_BRAKE["CHIME"] OR ELSE CONROLSD CRASHES UPON FCW!!! SET TO 0 AT ALL TIMES!
     "FCW": fcw << 1,  # TODO: Why are there two bits for fcw?
     "AEB_REQ_1": 0,
     "AEB_REQ_2": 0,
