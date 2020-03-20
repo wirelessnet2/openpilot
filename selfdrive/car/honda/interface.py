@@ -127,7 +127,7 @@ class CarInterface(CarInterfaceBase):
       ret.openpilotLongitudinalControl = False
     else:
       ret.safetyModel = car.CarParams.SafetyModel.hondaNidec
-      ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
+      ret.enableCamera = True #Clarity: We need to force this to True to make OpenPilot happy. -wirelessnet2
       ret.enableGasInterceptor = 0x201 in fingerprint[0]
       ret.openpilotLongitudinalControl = ret.enableCamera
 
@@ -204,6 +204,25 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
       ret.longitudinalTuning.kiBP = [0., 35.]
       ret.longitudinalTuning.kiV = [0.18, 0.12]
+
+    elif candidate == CAR.CLARITY: #Clarity: Just adding Clarity car parameters. -wirelessnet2
+      stop_and_go = True
+      ret.mass = 4052. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.wheelbase = 2.75
+      ret.centerToFront = ret.wheelbase * 0.4
+      ret.steerRatio = 16.00  # was 17.03, 12.72 is end-to-end spec
+      if eps_modified:
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 0xA00, 0x2800], [0, 2560, 3840]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.35], [0.11]]
+      else:
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2560], [0, 2560]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.8], [0.24]]
+      tire_stiffness_factor = 1.
+
+      ret.longitudinalTuning.kpBP = [0., 5., 35.]
+      ret.longitudinalTuning.kpV = [3.6, 2.4, 1.5]
+      ret.longitudinalTuning.kiBP = [0., 35.]
+      ret.longitudinalTuning.kiV = [0.54, 0.36]
 
     elif candidate == CAR.ACURA_ILX:
       stop_and_go = False
@@ -406,11 +425,11 @@ class CarInterface(CarInterfaceBase):
   def update(self, c, can_strings):
     # ******************* do can recv *******************
     self.cp.update_strings(can_strings)
-    self.cp_cam.update_strings(can_strings)
+    #elf.cp_cam.update_strings(can_strings) #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
 
-    ret = self.CS.update(self.cp, self.cp_cam)
+    ret = self.CS.update(self.cp) #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
 
-    ret.canValid = self.cp.can_valid and self.cp_cam.can_valid
+    ret.canValid = self.cp.can_valid #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
     ret.yawRate = self.VM.yaw_rate(ret.steeringAngle * CV.DEG_TO_RAD, ret.vEgo)
     # FIXME: read sendcan for brakelights
     brakelights_threshold = 0.02 if self.CS.CP.carFingerprint == CAR.CIVIC else 0.1
