@@ -454,7 +454,6 @@ class CarInterface(CarInterfaceBase):
     ret.cruiseState.standstill = False
 
     ret.lkMode = self.CS.lkMode
-    ret.readdistancelines = self.CS.read_distance_lines
     ret.brakeToggle = self.CS.brakeToggle
     ret.engineRPM = self.CS.engineRPM
     ret.odometer = self.CS.odometer
