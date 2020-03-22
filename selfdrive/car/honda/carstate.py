@@ -49,6 +49,7 @@ def get_can_signals(CP):
       ("BRAKE_PRESSED", "POWERTRAIN_DATA", 0),
       ("BRAKE_SWITCH", "POWERTRAIN_DATA", 0),
       ("CRUISE_BUTTONS", "SCM_BUTTONS", 0),
+      ("HUD_LEAD", "ACC_HUD", 0), 
       ("ESP_DISABLED", "VSA_STATUS", 1),
       ("USER_BRAKE", "VSA_STATUS", 0),
       ("BRAKE_HOLD_ACTIVE", "VSA_STATUS", 0),
@@ -200,6 +201,8 @@ class CarState():
     self.lkMode = True
     self.brakeToggle = True
     self.gasToggle = True
+    self.trMode = 2
+    self.read_distance_lines_prev = 4
     self.CP = CP
     self.can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
     self.shifter_values = self.can_define.dv["GEARBOX"]["GEAR_SHIFTER"]
@@ -208,6 +211,8 @@ class CarState():
     self.user_gas, self.user_gas_pressed = 0., 0
     self.brake_switch_prev = 0
     self.brake_switch_ts = 0
+    self.lead_distance = 255
+    self.hud_lead = 0
 
     self.cruise_buttons = 0
     self.cruise_setting = 0
@@ -249,6 +254,7 @@ class CarState():
     # update prevs, update must run once per loop
     self.prev_cruise_buttons = self.cruise_buttons
     self.prev_blinker_on = self.blinker_on
+    self.prev_lead_distance = self.lead_distance
 
     self.prev_left_blinker_on = self.left_blinker_on
     self.prev_right_blinker_on = self.right_blinker_on
@@ -382,6 +388,11 @@ class CarState():
       if self.user_brake > 0.05:
         self.brake_pressed = 1
 
+    # when user presses distance button on steering wheel
+    if self.cruise_setting == 3:
+      if cp.vl["SCM_BUTTONS"]["CRUISE_SETTING"] == 0:
+        self.trMode = (self.trMode + 1 ) % 4
+
     # when user presses LKAS button on steering wheel
     if self.cruise_setting == 1:
       if cp.vl["SCM_BUTTONS"]["CRUISE_SETTING"] == 0:
@@ -443,6 +454,9 @@ class CarState():
         self.preEnableAlert = False
 
     self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
+    self.read_distance_lines = self.trMode + 1
+    if self.read_distance_lines != self.read_distance_lines_prev:
+      self.read_distance_lines_prev = self.read_distance_lines
 
     if self.pedal_gas > 0:
       if self.pcm_acc_status != self.pcm_acc_status_prev:
