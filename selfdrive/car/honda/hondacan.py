@@ -2,6 +2,7 @@ import struct #Clarity
 import common.numpy_fast as np #Clarity
 from selfdrive.config import Conversions as CV
 from selfdrive.car.honda.values import CAR, HONDA_BOSCH, VEHICLE_STATE_MSG #Clarity
+from common.params import Params
 
 #Clarity
 # *** Honda specific ***
