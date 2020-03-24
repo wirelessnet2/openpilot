@@ -153,7 +153,7 @@ int run_mpc(state_t * x0, log_t * solution, double l, double a_l_0, double TR){
   acadoVariables.x[2] = acadoVariables.x0[2] = x0->a_ego;
 
   acado_preparationStep(TR);
-  acado_feedbackStep(TR);
+  acado_feedbackStep();
 
   for (i = 0; i <= N; i++){
     solution->x_ego[i] = acadoVariables.x[i*NX];
