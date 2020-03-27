@@ -2,29 +2,26 @@ import os
 from common.basedir import BASEDIR
 
 
-def get_attr_from_cars(attr, result=dict):
+def get_attr_from_cars(attr, result=dict): #Clarity: This modification limits the scope of get_fw_verions() to only hondas, massively speeding up the fw query. -wirelessnet2
   # read all the folders in selfdrive/car and return a dict where:
   # - keys are all the car models
   # - values are attr values from all car folders
   result = result()
 
-  for car_folder in [x[0] for x in os.walk(BASEDIR + '/selfdrive/car')]:
-    try:
-      car_name = car_folder.split('/')[-1]
-      values = __import__('selfdrive.car.%s.values' % car_name, fromlist=[attr])
-      if hasattr(values, attr):
-        attr_values = getattr(values, attr)
-      else:
-        continue
+  try:
+    car_name = 'honda'
+    values = __import__('selfdrive.car.%s.values' % car_name, fromlist=[attr])
+    if hasattr(values, attr):
+      attr_values = getattr(values, attr)
 
-      if isinstance(attr_values, dict):
-        for f, v in attr_values.items():
-          result[f] = v
-      elif isinstance(attr_values, list):
-        result += attr_values
+    if isinstance(attr_values, dict):
+      for f, v in attr_values.items():
+        result[f] = v
+    elif isinstance(attr_values, list):
+      result += attr_values
 
-    except (ImportError, IOError):
-      pass
+  except (ImportError, IOError):
+    pass
 
   return result
 

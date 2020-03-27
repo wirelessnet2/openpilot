@@ -8,7 +8,7 @@ DFU_UTIL = "dfu-util"
 ifeq (,$(wildcard /EON))
   BUILDER = DEV
 else
-  CFLAGS += "-DEON"
+  CFLAGS += "-DEON" #COMMENT OUT THIS LINE TO MAKE EPS FLASH PANDA -wirelessnet2
   BUILDER = EON
   DFU_UTIL = "tools/dfu-util-aarch64"
 endif
