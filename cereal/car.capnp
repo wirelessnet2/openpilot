@@ -91,6 +91,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     carUnrecognized @66;
     radarCommIssue @67;
     driverMonitorLowAcc @68;
+    manualSteeringRequired @69;
   }
 }
 
@@ -148,6 +149,8 @@ struct CarState {
 
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
+
+  lkMode @35 :Bool;
 
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
