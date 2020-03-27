@@ -25,8 +25,8 @@ ThermalStatus = log.ThermalData.ThermalStatus
 NetworkType = log.ThermalData.NetworkType
 NetworkStrength = log.ThermalData.NetworkStrength
 CURRENT_TAU = 15.   # 15s time constant
-DAYS_NO_CONNECTIVITY_MAX = 7  # do not allow to engage after a week without internet
-DAYS_NO_CONNECTIVITY_PROMPT = 4  # send an offroad prompt after 4 days with no internet
+DAYS_NO_CONNECTIVITY_MAX = 999999 #Kill the No Connectivity Prompt -wirelessnet2
+DAYS_NO_CONNECTIVITY_PROMPT = 999999 #Kill the No Connectivity Prompt -wirelessnet2
 
 LEON = False
 last_eon_fan_val = None
@@ -138,7 +138,7 @@ def handle_fan_eon(max_cpu_temp, bat_temp, fan_speed, ignition):
 
 
 def handle_fan_uno(max_cpu_temp, bat_temp, fan_speed, ignition):
-  new_speed = int(interp(max_cpu_temp, [40.0, 80.0], [0, 80]))
+  new_speed = int(interp(max_cpu_temp, [50.0, 85.0], [0, 80]))
 
   if not ignition:
     new_speed = min(30, new_speed)

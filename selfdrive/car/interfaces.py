@@ -16,6 +16,8 @@ class CarInterfaceBase():
     self.CP = CP
     self.VM = VehicleModel(CP)
 
+    self.hzCounter = 0
+
     self.frame = 0
     self.gas_pressed_prev = False
     self.brake_pressed_prev = False
@@ -103,9 +105,15 @@ class CarInterfaceBase():
     if not cs_out.lkMode:
       events.append(create_event('manualSteeringRequired', [ET.WARNING]))
     elif getattr(self.CS, "steer_error", False):
-      events.append(create_event('steerUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
-    elif getattr(self.CS, "steer_warning", False):
+      self.hzCounter += 1
+      if self.hzCounter > 300: #This will allow for LKAS Fault for 3 seconds before throwing error. -wirelessnet2
+        events.append(create_event('steerUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
+        self.hzCounter = 301 #Clamp the value of hzCounter -wirelessnet2
+    elif getattr(self.CS, "steer_warning", False) and cs_out.lkMode:
       events.append(create_event('steerTempUnavailable', [ET.NO_ENTRY, ET.WARNING]))
+
+    if not getattr(self.CS, "steer_error", False):
+      self.hzCounter = 0
 
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
     # Optionally allow to press gas at zero speed to resume.
