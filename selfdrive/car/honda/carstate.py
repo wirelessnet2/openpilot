@@ -40,6 +40,7 @@ def get_can_signals(CP):
       ("BRAKE_PRESSED", "POWERTRAIN_DATA", 0),
       ("BRAKE_SWITCH", "POWERTRAIN_DATA", 0),
       ("CRUISE_BUTTONS", "SCM_BUTTONS", 0),
+      ("HUD_LEAD", "ACC_HUD", 0), 
       ("ESP_DISABLED", "VSA_STATUS", 1),
       ("USER_BRAKE", "VSA_STATUS", 0),
       ("BRAKE_HOLD_ACTIVE", "VSA_STATUS", 0),
@@ -176,6 +177,10 @@ class CarState(CarStateBase):
     self.pcm_acc_status_prev = False
     self.openpilotEngagedWithGasDepressed = False
     self.preEnableAlert = False
+    self.trMode = 2
+    self.read_distance_lines_prev = 4
+    self.lead_distance = 255
+    self.hud_lead = 0
 
   def update(self, cp): #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
     ret = car.CarState.new_message()
@@ -186,6 +191,7 @@ class CarState(CarStateBase):
 
     # update prevs, update must run once per loop
     self.prev_cruise_buttons = self.cruise_buttons
+    self.prev_lead_distance = self.lead_distance
 
     # ******************* parse out can *******************
     if self.CP.carFingerprint in (CAR.ACCORD, CAR.ACCORD_15, CAR.ACCORDH, CAR.CIVIC_BOSCH, CAR.CIVIC_BOSCH_DIESEL, CAR.CRV_HYBRID, CAR.INSIGHT): # TODO: find wheels moving bit in dbc
@@ -306,6 +312,11 @@ class CarState(CarStateBase):
       if ret.brake > 0.05:
         ret.brakePressed = True
 
+    # when user presses distance button on steering wheel
+    if self.cruise_setting == 3:
+      if cp.vl["SCM_BUTTONS"]["CRUISE_SETTING"] == 0:
+        self.trMode = (self.trMode + 1 ) % 4
+
     # when user presses LKAS button on steering wheel
     if self.cruise_setting == 1:
       if cp.vl["SCM_BUTTONS"]["CRUISE_SETTING"] == 0:
@@ -375,6 +386,9 @@ class CarState(CarStateBase):
       self.preEnableAlert = False
 
     self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
+    self.read_distance_lines = self.trMode + 1
+    if self.read_distance_lines != self.read_distance_lines_prev:
+      self.read_distance_lines_prev = self.read_distance_lines
 
     if self.pedal_gas > 0:
       if ret.cruiseState.enabled != self.pcm_acc_status_prev:

@@ -1,5 +1,6 @@
 from selfdrive.config import Conversions as CV
 from selfdrive.car.honda.values import CAR, HONDA_BOSCH #Clarity
+from common.params import Params
 
 def get_pt_bus(car_fingerprint, has_relay):
   return 1 if car_fingerprint in HONDA_BOSCH and has_relay else 0
@@ -68,14 +69,21 @@ def create_ui_commands(packer, pcm_speed, hud, car_fingerprint, is_metric, idx, 
   bus_lkas = 2
 
   if car_fingerprint not in HONDA_BOSCH:
+    is_eon_metric = Params().get("IsMetric", encoding='utf8') == "1"
+    if is_eon_metric:
+      speed_units = 2
+    else:
+      speed_units = 3
+
     acc_hud_values = {
       'PCM_SPEED': pcm_speed * CV.MS_TO_KPH,
       'PCM_GAS': hud.pcm_accel,
       'CRUISE_SPEED': hud.v_cruise,
       'ENABLE_MINI_CAR': 1,
       'HUD_LEAD': hud.car,
-      'HUD_DISTANCE': 3,    # max distance setting on display
-      'IMPERIAL_UNIT': int(not is_metric),
+      'HUD_DISTANCE_3': 1,    # max distance setting on display
+      'HUD_DISTANCE': hud.dist_lines,
+      'IMPERIAL_UNIT': speed_units,
       'SET_ME_X01_2': 1,
       'SET_ME_X01': 1,
       "FCM_OFF": 0, #CLarity: This call on stock_hud[] and causes a crash. -wirelessnet2
