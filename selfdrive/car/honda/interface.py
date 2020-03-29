@@ -438,6 +438,7 @@ class CarInterface(CarInterfaceBase):
                            c.actuators.brake > brakelights_threshold)
     
     ret.lkMode = self.CS.lkMode
+    ret.engineRPM = self.CS.engineRPM
 
     buttonEvents = []
 
