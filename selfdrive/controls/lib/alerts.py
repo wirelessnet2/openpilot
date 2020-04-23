@@ -95,6 +95,13 @@ ALERTS = [
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
 
   Alert(
+      "manualSteeringRequired",
+      "STEERING REQUIRED: Lane Keeping OFF",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+
+  Alert(
       "steerTempUnavailable",
       "TAKE CONTROL",
       "Steering Temporarily Unavailable",
