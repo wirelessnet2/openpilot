@@ -96,6 +96,9 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     laneChangeBlocked @71;
     relayMalfunction @72;
     manualSteeringRequired @73;
+    acceleratorDisabled @74;
+    lkasOnly @75;
+    longPreEnable @76;
   }
 }
 
@@ -157,6 +160,7 @@ struct CarState {
   lkMode @35 :Bool;
   readdistancelines @36 :Int16;
   engineRPM @37 :Float32;
+  brakeToggle @38 :Bool;
 
   # which packets this state came from
   canMonoTimes @12: List(UInt64);

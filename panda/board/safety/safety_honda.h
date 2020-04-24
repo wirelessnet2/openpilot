@@ -80,7 +80,7 @@ static int honda_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
                               honda_get_checksum, honda_compute_checksum, honda_get_counter);
   }
 
-  bool unsafe_allow_gas = unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS;
+  bool unsafe_allow_gas = true; //What's the correct way to set this? -wirelessnet2
 
   if (valid) {
     int addr = GET_ADDR(to_push);
