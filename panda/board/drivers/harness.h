@@ -91,7 +91,7 @@ void harness_init(void) {
     set_gpio_mode(current_board->harness_config->GPIO_SBU2, current_board->harness_config->pin_SBU2, MODE_INPUT);
 
     // keep busses connected by default
-    set_intercept_relay(false);
+    set_intercept_relay(true); //Clarity: For Clarity, the Car Harness relay should ALWAYS be physically open, no exceptions. Otherwise the Main F-CANs are bridged. -wirelessnet2
   } else {
     puts("failed to detect car harness!\n");
   }
