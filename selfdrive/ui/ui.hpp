@@ -63,7 +63,8 @@ const int vwp_h = 1080;
 const int nav_w = 640;
 const int nav_ww= 760;
 const int sbr_w = 300;
-const int bdr_s = 30;
+const int bdr_s = 10;
+const int bdr_is = 30;
 const int box_x = sbr_w+bdr_s;
 const int box_y = bdr_s;
 const int box_w = vwp_w-sbr_w-(bdr_s*2);
@@ -90,11 +91,11 @@ const int TRACK_POINTS_MAX_CNT = 50 * 2;
 
 const int SET_SPEED_NA = 255;
 
-const uint8_t bg_colors[][4] = {
-  [STATUS_STOPPED] = {0x07, 0x23, 0x39, 0xff},
-  [STATUS_DISENGAGED] = {0x17, 0x33, 0x49, 0xff},
-  [STATUS_ENGAGED] = {0x17, 0x86, 0x44, 0xff},
-  [STATUS_WARNING] = {0xDA, 0x6F, 0x25, 0xff},
+const uint8_t bg_colors[][4] = { //I reduced the alpha of all alerts except for the red critical alert. -wirelessnet2
+  [STATUS_STOPPED] = {0x07, 0x23, 0x39, 0x7D},
+  [STATUS_DISENGAGED] = {0x17, 0x33, 0x49, 0x7D},
+  [STATUS_ENGAGED] = {0x17, 0x86, 0x44, 0x7D},
+  [STATUS_WARNING] = {0xDA, 0x6F, 0x25, 0x87},
   [STATUS_ALERT] = {0xC9, 0x22, 0x31, 0xff},
 };
 
@@ -155,6 +156,20 @@ typedef struct UIScene {
 
   float awareness_status;
 
+  float angleSteers;
+  bool brakeLights;
+  float angleSteersDes;
+  bool recording;
+  float gpsAccuracyUblox;
+  float altitudeUblox;
+  int engineRPM;
+  bool steerOverride;
+  float output_scale;
+  float steeringTorqueEps;
+  float aEgo;
+  float cpu0Temp;
+  float batTemp;
+
   // Used to show gps planner status
   bool gps_planner_active;
 
@@ -209,6 +224,7 @@ typedef struct UIState {
   int img_battery;
   int img_battery_charging;
   int img_network[6];
+  int img_brake;
 
   // sockets
   Context *ctx;
@@ -224,6 +240,9 @@ typedef struct UIState {
   SubSocket *driverstate_sock;
   SubSocket *dmonitoring_sock;
   PubSocket *offroad_sock;
+  SubSocket *carstate_sock;
+  SubSocket *livempc_sock;
+  SubSocket *gpslocationexternal_sock;
   Poller * poller;
   Poller * ublox_poller;
 

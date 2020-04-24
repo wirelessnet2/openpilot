@@ -156,6 +156,7 @@ struct CarState {
 
   lkMode @35 :Bool;
   readdistancelines @36 :Int16;
+  engineRPM @37 :Float32;
 
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
