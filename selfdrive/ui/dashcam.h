@@ -141,7 +141,7 @@ void start_capture() {
   struct tm tm = get_time_struct();
   snprintf(filename,sizeof(filename),"%04d%02d%02d-%02d%02d%02d.mp4", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
   //snprintf(cmd,sizeof(cmd),"screenrecord --size 1280x720 --bit-rate 10000000 %s/%s&",videos_dir,filename);
-  snprintf(cmd,sizeof(cmd),"screenrecord --size 960x540 --bit-rate 5000000 %s/%s&",videos_dir,filename);
+  snprintf(cmd,sizeof(cmd),"screenrecord --size 1920x1080 --bit-rate 10000000 %s/%s&",videos_dir,filename);
   strcpy(filenames[captureNum],filename);
 
   printf("Capturing to file: %s\n",cmd);
@@ -336,12 +336,6 @@ void dashcam( UIState *s, int touch_x, int touch_y ) {
   if (!s->started) {
     // Assume car is not in drive so stop recording
     stop_capture();
-  }
-  if (s->scene.v_ego > 3.1 && captureState == CAPTURE_STATE_PAUSED) {
-    start_capture();
-  } else if (s->scene.v_ego < 2.9 && captureState == CAPTURE_STATE_CAPTURING) {
-    stop_capture();
-    captureState = CAPTURE_STATE_PAUSED;
   }
   s->scene.recording = (captureState != CAPTURE_STATE_NOT_CAPTURING);
 }
