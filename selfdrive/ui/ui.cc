@@ -576,7 +576,7 @@ void handle_message(UIState *s, Message * msg) {
     s->thermal_started = datad.started;
     s->scene.batTemp = round(datad.bat/10);
     s->scene.cpu0Temp = round(datad.cpu0/10);
-    s->scene.cpuPerc = datad.cpuPerc
+    s->scene.cpuPerc = datad.cpuPerc;
 
   } else if (eventd.which == cereal_Event_ubloxGnss) {
     struct cereal_UbloxGnss datad;
