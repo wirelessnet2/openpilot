@@ -247,7 +247,7 @@ def thermald_thread():
     msg.thermal.usbOnline = get_usb_present()
 
     # Fake battery levels on uno for frame
-    if is_uno:
+    if True:
       msg.thermal.batteryPercent = 100
       msg.thermal.batteryStatus = "Charging"
 
