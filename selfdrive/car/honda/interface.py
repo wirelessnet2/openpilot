@@ -215,7 +215,7 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.50  # was 17.03, 12.72 is end-to-end spec
       if eps_modified:
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 0xA00, 0x7800], [0, 2560, 3840]]
-        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.1], [0.032]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0975], [0.032]]
       else:
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2560], [0, 2560]]
         ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.8], [0.24]]
@@ -418,7 +418,7 @@ class CarInterface(CarInterfaceBase):
     ret.startAccel = 0.5
 
     ret.steerActuatorDelay = 0.1
-    ret.steerRateCost = 0.35
+    ret.steerRateCost = 0.4
     ret.steerLimitTimer = 0.8
 
     return ret
