@@ -143,7 +143,7 @@ class CarInterface(CarInterfaceBase):
     # For modeling details, see p.198-200 in "The Science of Vehicle Dynamics (2014), M. Guiggiani"
     ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0], [0]]
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-    ret.lateralTuning.pid.kf = 0.00004 # conservative feed-forward
+    ret.lateralTuning.pid.kf = 0.000045 # conservative feed-forward
     ret.steerRatioV = 0.005 #Random Convervative Value -wirelessnet2
 
     eps_modified = False
@@ -215,7 +215,7 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.50  # was 17.03, 12.72 is end-to-end spec
       if eps_modified:
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 0xA00, 0x7800], [0, 2560, 3840]]
-        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0975], [0.032]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.097], [0.031]]
       else:
         ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2560], [0, 2560]]
         ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.8], [0.24]]
