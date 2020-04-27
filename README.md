@@ -1,6 +1,6 @@
 Welcome to wirelessnet2's Honda Clarity OpenPilot Fork!
 
-[![](https://imgur.com/a/hTIF3jP)](#)
+[![](https://i.imgur.com/g20s8am.png)](#)
 
 This is the Clarity_0.7.5_Plus branch, which is built upon the Clarity_0.7.5 branch. The Plus branch adds some goodies not normally found in stock OpenPilot.
 The additions on top of stock OpenPilot are added in [Modules and Packages](https://github.com/wirelessnet2/openpilot/commits/Clarity_0.7.5_Plus). This makes the porting process to future OpenPilot versions much easier. Here's an overview of those modular code blocks:
