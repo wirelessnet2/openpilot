@@ -10,6 +10,7 @@
 #define FAULT_INTERRUPT_RATE_CAN_3      (1U << 4)
 #define FAULT_INTERRUPT_RATE_TACH       (1U << 5)
 #define FAULT_INTERRUPT_RATE_GMLAN      (1U << 6)
+#define FAULT_INTERRUPT_RATE_BITBANG_CAN (1U << 6) //Set to 2x 500kbps = 1,000,000 -wirelessnet2
 #define FAULT_INTERRUPT_RATE_INTERRUPTS (1U << 7)
 #define FAULT_INTERRUPT_RATE_SPI_DMA    (1U << 8)
 #define FAULT_INTERRUPT_RATE_SPI_CS     (1U << 9)
