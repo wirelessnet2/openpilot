@@ -23,7 +23,13 @@ void EXTI15_10_IRQ_Handler(void) {
 
 void can_bitbang_init(void) {
     REGISTER_INTERRUPT(EXTI15_10_IRQn, EXTI15_10_IRQ_Handler, 600000U, FAULT_INTERRUPT_RATE_BITBANG_CAN);
-    //figure out the SYSCFG->EXTICR register and do register_set()
+    if(OBD_CAN_RX_PIN == 12) {
+        register_set(&(SYSCFG->EXTICR[3]), SYSCFG_EXTICR4_EXTI12_PB, /*CALCULATE MASK*/)
+    }
+    else {
+        register_set(&(SYSCFG->EXTICR[3]), SYSCFG_EXTICR4_EXTI13_PB, /*CALCULATE MASK*/)
+    }
+
     register_set_bits(&(EXTI->IMR), (1U << OBD_CAN_RX_PIN));
     register_set_bits(&(EXTI->RTSR), (1U << OBD_CAN_RX_PIN));
     register_set_bits(&(EXTI->FTSR), (1U << OBD_CAN_RX_PIN));
