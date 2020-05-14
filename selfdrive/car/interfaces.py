@@ -97,9 +97,11 @@ class CarInterfaceBase():
     if cs_out.gasPressed:
       events.append(create_event('pedalPressed', [ET.PRE_ENABLE]))
 
-    if cs_out.steerError:
+    if not cs_out.lkMode:
+      events.append(create_event('manualSteeringRequired', [ET.WARNING]))
+    elif cs_out.steerError and cs_out.lkMode:
       events.append(create_event('steerUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
-    elif cs_out.steerWarning:
+    elif cs_out.steerWarning and cs_out.lkMode:
       events.append(create_event('steerTempUnavailable', [ET.NO_ENTRY, ET.WARNING]))
 
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
