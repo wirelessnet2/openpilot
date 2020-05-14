@@ -453,6 +453,7 @@ class CarInterface(CarInterfaceBase):
     ret.readdistancelines = self.CS.read_distance_lines
     ret.lkMode = self.CS.lkMode
     ret.engineRPM = self.CS.engineRPM
+    ret.brakeToggle = self.CS.brakeToggle
 
     buttonEvents = []
 
@@ -504,14 +505,13 @@ class CarInterface(CarInterfaceBase):
 
     # it can happen that car cruise disables while comma system is enabled: need to
     # keep braking if needed or if the speed is very low
-    if self.CP.enableCruise and not ret.cruiseState.enabled and (c.actuators.brake <= 0. or not self.CP.openpilotLongitudinalControl):
-      # non loud alert if cruise disbales below 25mph as expected (+ a little margin)
-      if ret.vEgo < self.CP.minEnableSpeed + 2.:
-        events.append(create_event('speedTooLow', [ET.IMMEDIATE_DISABLE]))
-      else:
-        events.append(create_event("cruiseDisabled", [ET.IMMEDIATE_DISABLE]))
-    if self.CS.CP.minEnableSpeed > 0 and ret.vEgo < 0.001:
-      events.append(create_event('manualRestart', [ET.WARNING]))
+
+    if self.CS.preEnableAlert:
+      events.append(create_event('longPreEnable', [ET.WARNING]))
+    elif (self.CP.enableCruise and not ret.cruiseState.enabled) and not self.CS.brakeToggle: #If PCM is not taking computer_gas requests and user has pressed the gas pedal (which disables braking) -wirelessnet2
+      events.append(create_event('lkasOnly', [ET.WARNING]))
+    elif (self.CP.enableCruise and not ret.cruiseState.enabled):
+      events.append(create_event('acceleratorDisabled', [ET.WARNING]))
 
     cur_time = self.frame * DT_CTRL
     enable_pressed = False
@@ -554,7 +554,7 @@ class CarInterface(CarInterfaceBase):
     else:
       hud_v_cruise = 255
 
-    pcm_accel = int(clip(c.cruiseControl.accelOverride, 0, 1) * 0xc6)
+    pcm_accel = int(clip(c.cruiseControl.accelOverride, 0, 1) * 0xc6) if self.CS.gasToggle else 0
 
     can_sends = self.CC.update(c.enabled, self.CS, self.frame,
                                c.actuators,

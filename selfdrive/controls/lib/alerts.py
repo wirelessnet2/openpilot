@@ -96,7 +96,28 @@ ALERTS = [
 
   Alert(
       "manualSteeringRequired",
-      "STEERING REQUIRED: Lane Keeping OFF",
+      "STEERING REQUIRED: AutoSteer OFF",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+
+  Alert(
+      "acceleratorDisabled",
+      "OpenPilot Accel DISABLED",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+
+  Alert(
+      "lkasOnly",
+      "OpenPilot Accel and Brake DISABLED",
+      "",
+      AlertStatus.userPrompt, AlertSize.small,
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+
+  Alert(
+      "longPreEnable",
+      "OpenPilot Accel and Brake DISABLED",
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
