@@ -27,7 +27,8 @@ void can_bitbang_init(void) {
         register_set_bits(&(EXTI->FTSR), (1U << 5));
         NVIC_EnableIRQ(EXTI9_5_IRQn);
     }
-    else{puts("Bitbang CAN init failed!\n")
+    else {
+        puts("Bitbang CAN init failed!\n")
     }
 };
 
