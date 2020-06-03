@@ -33,5 +33,9 @@ void can_bitbang_init(void) {
     else {
         puts("Bitbang CAN init failed!\n")
     }
+
+    //Setup Timer
+    register_set(&(TIM5->PSC), //CALCULATE MASK, 0xFFFFU); //Set Prescalar: Tick every ?
+    register_set(&(TIM5->CR1), TIM_CR1_CEN, 0x3FU); //Enable Counter
 };
 
