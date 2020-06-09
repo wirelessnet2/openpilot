@@ -89,7 +89,7 @@ static int honda_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
                               honda_get_checksum, honda_compute_checksum, honda_get_counter);
   }
 
-  bool unsafe_allow_gas = unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS;
+  bool unsafe_allow_gas = true;
 
   if (valid) {
     int addr = GET_ADDR(to_push);
@@ -220,7 +220,7 @@ static int honda_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   // disallow actuator commands if gas or brake (with vehicle moving) are pressed
   // and the the latching controls_allowed flag is True
   int pedal_pressed = brake_pressed_prev && vehicle_moving;
-  bool unsafe_allow_gas = unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS;
+  bool unsafe_allow_gas = true;
   if (!unsafe_allow_gas) {
     pedal_pressed = pedal_pressed || gas_pressed_prev || (gas_interceptor_prev > HONDA_GAS_INTERCEPTOR_THRESHOLD);
   }
