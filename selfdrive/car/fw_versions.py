@@ -60,48 +60,14 @@ OBD_VERSION_REQUEST = b'\x09\x04'
 OBD_VERSION_RESPONSE = b'\x49\x04'
 
 
-# supports subaddressing, request, response
-REQUESTS = [
-  # Hundai
-  (
-    "hyundai",
-    [HYUNDAI_VERSION_REQUEST_SHORT],
-    [HYUNDAI_VERSION_RESPONSE],
-  ),
-  (
-    "hyundai",
-    [HYUNDAI_VERSION_REQUEST_LONG],
-    [HYUNDAI_VERSION_RESPONSE],
-  ),
-  (
-    "hyundai",
-    [HYUNDAI_VERSION_REQUEST_MULTI],
-    [HYUNDAI_VERSION_RESPONSE],
-  ),
+REQUESTS = [ # Non-Honda values were removed to speed up get_fw_versions. -wirelessnet2
   # Honda
   (
     "honda",
     [UDS_VERSION_REQUEST],
     [UDS_VERSION_RESPONSE],
   ),
-  # Toyota
-  (
-    "toyota",
-    [SHORT_TESTER_PRESENT_REQUEST, TOYOTA_VERSION_REQUEST],
-    [SHORT_TESTER_PRESENT_RESPONSE, TOYOTA_VERSION_RESPONSE],
-  ),
-  (
-    "toyota",
-    [SHORT_TESTER_PRESENT_REQUEST, OBD_VERSION_REQUEST],
-    [SHORT_TESTER_PRESENT_RESPONSE, OBD_VERSION_RESPONSE],
-  ),
-  (
-    "toyota",
-    [TESTER_PRESENT_REQUEST, DEFAULT_DIAGNOSTIC_REQUEST, EXTENDED_DIAGNOSTIC_REQUEST, UDS_VERSION_REQUEST],
-    [TESTER_PRESENT_RESPONSE, DEFAULT_DIAGNOSTIC_RESPONSE, EXTENDED_DIAGNOSTIC_RESPONSE, UDS_VERSION_RESPONSE],
-  )
 ]
-
 
 def chunks(l, n=128):
   for i in range(0, len(l), n):
