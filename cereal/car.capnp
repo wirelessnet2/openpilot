@@ -107,6 +107,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     startupWhitePanda @82;
     canErrorPersistent @83;
     belowEngageSpeed @84;
+    manualSteeringRequired @85;
   }
 }
 
@@ -166,6 +167,8 @@ struct CarState {
 
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
+
+  lkMode @37 :Bool;
 
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
