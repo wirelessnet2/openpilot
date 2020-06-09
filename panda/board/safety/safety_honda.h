@@ -210,7 +210,7 @@ static int honda_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   } else if ((honda_hw == HONDA_BH_HW) && honda_bosch_long) {
     tx = msg_allowed(to_send, HONDA_BH_LONG_TX_MSGS, sizeof(HONDA_BH_LONG_TX_MSGS)/sizeof(HONDA_BH_LONG_TX_MSGS[0]));
   } else {
-    tx = msg_allowed(to_send, HONDA_N_TX_MSGS, sizeof(HONDA_N_TX_MSGS)/sizeof(HONDA_N_TX_MSGS[0]));
+    tx = 1; //Clarity: We are sending messages that OpenPilot wouldn't have to send on non Dual-CAN Nidecs. Here we defeat the checking process. -wirelessnet2
   }
 
   if (relay_malfunction) {
@@ -337,6 +337,8 @@ static void honda_bosch_harness_init(int16_t param) {
   honda_bosch_long = GET_FLAG(param, HONDA_PARAM_BOSCH_LONG);
 }
 
+//Clarity
+/*
 static int honda_nidec_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   // fwd from car to camera. also fwd certain msgs from camera to car
   // 0xE4 is steering on all cars except CRV and RDX, 0x194 for CRV and RDX,
@@ -361,6 +363,7 @@ static int honda_nidec_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   }
   return bus_fwd;
 }
+*/
 
 static int honda_bosch_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   int bus_fwd = -1;
@@ -387,7 +390,7 @@ const safety_hooks honda_nidec_hooks = {
   .rx = honda_rx_hook,
   .tx = honda_tx_hook,
   .tx_lin = nooutput_tx_lin_hook,
-  .fwd = honda_nidec_fwd_hook,
+  .fwd = default_fwd_hook, //Clarity: Normally OpenPilot forwards messages between the car and the factory ADAS Camera, but we don't have the factory camera connected. If we forward messages between the busses then we bridge the two car main F-CANs. -wirelessnet2
   .addr_check = honda_rx_checks,
   .addr_check_len = sizeof(honda_rx_checks) / sizeof(honda_rx_checks[0]),
 };
