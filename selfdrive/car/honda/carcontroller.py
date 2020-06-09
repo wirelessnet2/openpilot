@@ -13,7 +13,7 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 def actuator_hystereses(brake, braking, brake_steady, v_ego, car_fingerprint):
   # hyst params
   brake_hyst_on = 0.02     # to activate brakes exceed this value
-  brake_hyst_off = 0.005                     # to deactivate brakes below this value
+  brake_hyst_off = 0.003                     # to deactivate brakes below this value
   brake_hyst_gap = 0.01                      # don't change brake command for small oscillations within this value
 
   #*** hysteresis logic to avoid brake blinking. go above 0.1 to trigger
@@ -32,6 +32,9 @@ def actuator_hystereses(brake, braking, brake_steady, v_ego, car_fingerprint):
 
   if (car_fingerprint in (CAR.ACURA_ILX, CAR.CRV, CAR.CRV_EU)) and brake > 0.0:
     brake += 0.15
+
+  if (car_fingerprint in (CAR.CLARITY)) and brake > 0.0:
+    brake += 0.0075
 
   return brake, braking, brake_steady
 
