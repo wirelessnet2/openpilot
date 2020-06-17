@@ -1,3 +1,5 @@
+#include <iostream>
+
 void calculate_bitbang(void) {
     //This will be called in main.c at 1Hz
     //Do the message reconstruction here
@@ -38,4 +40,51 @@ void can_bitbang_init(void) {
     register_set(&(TIM5->PSC), (12-1), 0xFFFFU); //Runs TIM5 at 1MHz (12MHz APB1 Timer Clock / 12 Prescalar)
     register_set(&(TIM5->CR1), TIM_CR1_CEN, 0x3FU); //Enable Counter
 };
+
+//class for making circular buffer
+class circbuf {
+    public:
+    explicit circbuf(size_t size = 100):      //constructor init head and tail indexes and buffer specs
+    maxbSize(size),
+    bufferArray(new size_t[size]),
+    head(0),
+    tail(0),
+    bufferFull(0)
+    {}
+    ~circbuf()                               //destructor to destroy buffer
+    {delete[] bufferArray;}
+    size_t popElement(){                     //pops element (FIFO)
+        if ((head == tail) && (bufferFull != 1)) {
+            std::cout << "Nothing to pop. Buffer is empty \n";
+            return 0;
+        }else{
+            size_t data = bufferArray[tail];
+            std::cout << "The value popped from " << tail << " is " << data << "\n";
+            tail++;
+            if (tail == maxbSize + 1) {
+                tail = 0;
+            }
+            return data;
+        }
+    };
+    void pushElement(size_t data){               //pushes data into buffer (FIFO)
+        bufferArray[head] = data;
+        std::cout << "The value at index " << head << " is " << (bufferArray[head]) << "\n";
+        head++;
+        if (head == maxbSize + 1) {
+            head = 0;
+        }
+        if ((head+1 == tail) || (head-100 == tail)){
+            bufferFull = 1;
+            std::cout << "Warning: You may overwrite data\n";
+        }
+    };
+    private:
+    const size_t maxbSize;
+    size_t* bufferArray;
+    size_t head;
+    size_t tail;
+    bool bufferFull;
+};
+
 
