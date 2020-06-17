@@ -4,11 +4,14 @@ void calculate_bitbang(void) {
     //This will be called in main.c at 1Hz
     //Do the message reconstruction here
     //Write the final message to a variable that we can send over to the EON over USB
+
 };
 
 void bitbang_IRQ_Handler(void) {
-//Interrupt Handler Code Here
-//Probably just write to the ring buffer?
+if(isReady){
+    register_set(&(TIM5->CR), 0x0000, 0xFFFF)
+};
+bitbangBuff.pushElement(&(TIM5->CR));
 EXTI->PR = (1U << BITBANG_CAN_PIN);
 };
 
@@ -39,6 +42,10 @@ void can_bitbang_init(void) {
     //Setup Timer
     register_set(&(TIM5->PSC), (12-1), 0xFFFFU); //Runs TIM5 at 1MHz (12MHz APB1 Timer Clock / 12 Prescalar)
     register_set(&(TIM5->CR1), TIM_CR1_CEN, 0x3FU); //Enable Counter
+
+    bool isReady;
+
+    circbuf bitbangBuff;
 };
 
 //class for making circular buffer
