@@ -41,7 +41,7 @@ void can_bitbang_init(void) {
     }
 
     //Setup Timer
-    register_set(&(TIM5->PSC), (12-1), 0xFFFFU); //Runs TIM5 at 1MHz (12MHz APB1 Timer Clock / 12 Prescalar)
+    register_set(&(TIM5->PSC), (6-1), 0xFFFFU); //Runs TIM5 at 500KHz (12MHz APB1 Timer Clock / 24 Prescalar)
     register_set(&(TIM5->CR1), TIM_CR1_CEN, 0x3FU); //Enable Counter
 
     circbuf bitbangBuff;
