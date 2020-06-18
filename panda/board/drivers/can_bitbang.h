@@ -9,7 +9,7 @@ void calculate_bitbang(/*FullBuffer*/) {
 void bitbang_IRQ_Handler(void) {
 if((TIM5->CR - bitbangBuff.getRecent()) > 8){
     register_set(&(TIM5->CR), 0x0000, 0xFFFF);
-    calculate_bitbang(/*fullBuffer*/)
+    calculate_bitbang(/*fullBuffer*/) //This step is probably really time sensitive... needs to be mega fast or we need to take it out of the IRQ
     bitbangBuff.clearBuffer();
 };
 bitbangBuff.pushElement(&(TIM5->CR));
@@ -41,7 +41,7 @@ void can_bitbang_init(void) {
     }
 
     //Setup Timer
-    register_set(&(TIM5->PSC), (6-1), 0xFFFFU); //Runs TIM5 at 500KHz (12MHz APB1 Timer Clock / 24 Prescalar)
+    register_set(&(TIM5->PSC), (6-1), 0xFFFFU); //Runs TIM5 at 500KHz (12MHz APB1 Timer Clock / 24 Prescalar) = 2us ticks
     register_set(&(TIM5->CR1), TIM_CR1_CEN, 0x3FU); //Enable Counter
 
     circbuf bitbangBuff;
