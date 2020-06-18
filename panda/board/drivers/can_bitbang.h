@@ -1,15 +1,16 @@
 #include <iostream>
 
-void calculate_bitbang(void) {
-    //This will be called in main.c at 1Hz
+void calculate_bitbang(/*FullBuffer*/) {
     //Do the message reconstruction here
     //Write the final message to a variable that we can send over to the EON over USB
 
 };
 
 void bitbang_IRQ_Handler(void) {
-if(isReady){
-    register_set(&(TIM5->CR), 0x0000, 0xFFFF)
+if((TIM5->CR - bitbangBuff.getRecent()) > 8){
+    register_set(&(TIM5->CR), 0x0000, 0xFFFF);
+    calculate_bitbang(/*fullBuffer*/)
+    bitbangBuff.clearBuffer();
 };
 bitbangBuff.pushElement(&(TIM5->CR));
 EXTI->PR = (1U << BITBANG_CAN_PIN);
@@ -42,8 +43,6 @@ void can_bitbang_init(void) {
     //Setup Timer
     register_set(&(TIM5->PSC), (12-1), 0xFFFFU); //Runs TIM5 at 1MHz (12MHz APB1 Timer Clock / 12 Prescalar)
     register_set(&(TIM5->CR1), TIM_CR1_CEN, 0x3FU); //Enable Counter
-
-    bool isReady;
 
     circbuf bitbangBuff;
 };
@@ -85,6 +84,19 @@ class circbuf {
             bufferFull = 1;
             std::cout << "Warning: You may overwrite data\n";
         }
+    };
+    size_t getRecent(void){
+        return bufferArray[head-1];
+    };
+    void clearBuffer(void){
+        head = 0
+        tail = 0
+    };
+    size_t getHead(void){
+        return head;
+    };
+    size_t getTail(void){
+        return tail;
     };
     private:
     const size_t maxbSize;
