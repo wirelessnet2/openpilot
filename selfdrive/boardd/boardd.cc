@@ -67,7 +67,7 @@ bool connected_once = false;
 bool ignition_last = false;
 
 #ifndef __x86_64__
-const uint32_t NO_IGNITION_CNT_MAX = 2 * 60 * 60 * 30;  // turn off charge after 30 hrs
+const uint32_t NO_IGNITION_CNT_MAX = 2 * 60 * 60 * 168;  // turn off charge after 1 week
 const float VBATT_START_CHARGING = 11.5;
 const float VBATT_PAUSE_CHARGING = 11.0;
 #endif
