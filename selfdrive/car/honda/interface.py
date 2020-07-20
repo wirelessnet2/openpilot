@@ -147,12 +147,18 @@ class CarInterface(CarInterfaceBase):
     # For modeling details, see p.198-200 in "The Science of Vehicle Dynamics (2014), M. Guiggiani"
     ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0], [0]]
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-    ret.lateralTuning.pid.kf = 0.00006  # conservative feed-forward
+    ret.lateralTuning.pid.kf = 0.00004 # conservative feed-forward
+    ret.steerRatioV = 0.0045 #Random Convervative Value -wirelessnet2
 
     eps_modified = False
+    eps_modified_3x = False
     for fw in car_fw:
-      if fw.ecu == "eps" and b"," in fw.fwVersion:
+      if fw.ecu == "eps" and b"-" not in fw.fwVersion and b"," in fw.fwVersion:
+        eps_modified_3x = True
+        print("3x MODIFIED EPS DETECTED")
+      elif fw.ecu == "eps" and b"-" in fw.fwVersion and b"," in fw.fwVersion:
         eps_modified = True
+        print("2x MODIFIED EPS DETECTED")
 
     if candidate == CAR.CIVIC:
       stop_and_go = True
@@ -219,8 +225,18 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 2.75
       ret.centerToFront = ret.wheelbase * 0.4
       ret.steerRatio = 16.50  # was 17.03, 12.72 is end-to-end spec
-      ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2560], [0, 2560]]
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.8], [0.24]]
+      if eps_modified_3x:
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 0xA00, 0x3C00], [0, 2560, 3840]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.175], [0.0575]]
+        print("clarity.brUHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH") # @clarity.bru: Hello =P -wirelessnet2
+      elif eps_modified:
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 0xA00, 0x2800], [0, 2560, 3840]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.32], [0.1]]
+        print("!!!!!!!!!!!!!!!!!!2x MODIFIED TUNING VALUES USED!!!!!!!!!!!!!!!!!!")
+      else:
+        ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 2560], [0, 2560]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.775], [0.23]]
+        print("------------------UNMODIFIED TUNING VALUES USED------------------")
       tire_stiffness_factor = 1.
 
       ret.longitudinalTuning.kpBP = [0., 5., 35.]
@@ -431,7 +447,7 @@ class CarInterface(CarInterfaceBase):
     ret.startAccel = 0.5
 
     ret.steerActuatorDelay = 0.1
-    ret.steerRateCost = 0.5
+    ret.steerRateCost = 0.4
     ret.steerLimitTimer = 0.8
 
     return ret
