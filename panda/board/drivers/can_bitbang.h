@@ -7,13 +7,8 @@ void calculate_bitbang(/*FullBuffer*/) {
 };
 
 void bitbang_IRQ_Handler(void) {
-bitbangBuff.pushElement(&(TIM5->CR));
-if((TIM5->CR - bitbangBuff.getRecent()) > 8){
-    //Stop writing to old buffer
-    register_set(&(TIM5->CNT), 0x0000, 0xFFFF);
-    bitbangBuff.pushElement(0); //Needs to be new buffer
-};
-
+bitbangBuff.pushElement(&(TIM5->CNT));
+register_set(&(TIM5->CNT), 0x0000, 0xFFFF);
 EXTI->PR = (1U << BITBANG_CAN_PIN);
 };
 
