@@ -113,6 +113,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     neosUpdateRequired @88;
     modeldLagging @89;
     deviceFalling @90;
+    manualSteeringRequired @91;
   }
 }
 
@@ -172,6 +173,8 @@ struct CarState {
 
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
+
+  lkMode @37 :Bool;
 
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
