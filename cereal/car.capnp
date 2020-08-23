@@ -370,6 +370,7 @@ struct CarParams {
   centerToFront @19 :Float32;   # [m] GC distance to front axle
   steerRatio @20 :Float32;       # [] ratio between front wheels and steering wheel angles
   steerRatioRear @21 :Float32;  # [] rear steering ratio wrt front steering (usually 0)
+  steerRatioV @51 :Float32;       #Rate at which steerRatio falls as abs(steerAngle) increases for VGR Steering Racks -wirelessnet2
 
   # things we can derive
   rotationalInertia @22 :Float32;    # [kg*m2] body rotational inertia
