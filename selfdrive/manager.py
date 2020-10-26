@@ -185,7 +185,7 @@ managed_processes = {
   "sensord": ("selfdrive/sensord", ["./sensord"]),
   "clocksd": ("selfdrive/clocksd", ["./clocksd"]),
   "gpsd": ("selfdrive/sensord", ["./gpsd"]),
-  "updated": "selfdrive.updated",
+  #"updated": "selfdrive.updated", #Don't let the updater run. -wirelessnet2
   "dmonitoringmodeld": ("selfdrive/modeld", ["./dmonitoringmodeld"]),
   "modeld": ("selfdrive/modeld", ["./modeld"]),
   "rtshield": "selfdrive.rtshield",
@@ -227,7 +227,7 @@ if not PC:
 
 if ANDROID:
   persistent_processes += [
-    'updated',
+    #'updated', #Don't let the updater run. -wirelessnet2
   ]
 
 car_started_processes = [
