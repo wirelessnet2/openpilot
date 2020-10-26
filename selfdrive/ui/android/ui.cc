@@ -12,6 +12,7 @@
 #include "ui.hpp"
 #include "paint.hpp"
 #include "android/sl_sound.hpp"
+#include "dashcam.h"
 
 // Includes for light sensor
 #include <cutils/properties.h>
@@ -230,7 +231,11 @@ int main(int argc, char* argv[]) {
     } else {
       set_awake(s, false);
     }
-
+    
+    if (s->awake) {
+      dashcam(s, touch_x, touch_y);
+    }
+    
     // Don't waste resources on drawing in case screen is off
     if (!s->awake) {
       continue;
