@@ -101,6 +101,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     modeldLagging @89;
     deviceFalling @90;
     fanMalfunction @91;
+    manualSteeringRequired @92;
 
     gasUnavailableDEPRECATED @3;
     dataNeededDEPRECATED @16;
@@ -174,6 +175,8 @@ struct CarState {
 
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
+
+  lkMode @37 :Bool;
 
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
