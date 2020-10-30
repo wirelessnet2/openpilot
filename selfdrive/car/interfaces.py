@@ -20,6 +20,8 @@ class CarInterfaceBase():
     self.CP = CP
     self.VM = VehicleModel(CP)
 
+    self.hzCounter = 0
+    
     self.frame = 0
     self.low_speed_alert = False
 
@@ -114,10 +116,15 @@ class CarInterfaceBase():
     if not cs_out.lkMode:
       events.add(EventName.manualSteeringRequired)
     elif cs_out.steerError and cs_out.lkMode:
-      events.add(EventName.steerUnavailable)
+      self.hzCounter += 1
+      if self.hzCounter > 300: #This will allow for LKAS Fault for 3 seconds before throwing error. -wirelessnet2
+        events.add(EventName.steerUnavailable)
+        self.hzCounter = 301 #Clamp the value of hzCounter -wirelessnet2
     elif cs_out.steerWarning and cs_out.lkMode:
       events.add(EventName.steerTempUnavailable)
 
+    if not getattr(self.CS, "steer_error", False):
+      self.hzCounter = 0
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
     # Optionally allow to press gas at zero speed to resume.
     # e.g. Chrysler does not spam the resume button yet, so resuming with gas is handy. FIXME!
