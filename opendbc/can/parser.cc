@@ -178,8 +178,19 @@ void CANParser::UpdateCans(uint64_t sec, const capnp::List<cereal::CanData>::Rea
     for (int i = 0; i < msg_count; i++) {
       auto cmsg = cans[i];
       if (cmsg.getSrc() != bus) {
-        // DEBUG("skip %d: wrong bus\n", cmsg.getAddress());
-        continue;
+        //Clarity: This allows some messages to arrive on the wrong bus. -wirelessnet2
+        if ((bus == 0) && (cmsg.getSrc() == 2)) {
+            if ((cmsg.getAddress() == 399) || (cmsg.getAddress() == 892)) {
+              DEBUG("%d: processing msg from bus 2\n", cmsg.getAddress());
+            } else {
+              DEBUG("%d: not processing msg from bus 2\n", cmsg.getAddress());
+              continue;
+            }
+          } 
+          else {
+            DEBUG("%d: wrong bus (%d) wanted %d\n", cmsg.getAddress(), cmsg.getSrc(), bus);
+            continue;
+          }
       }
       auto state_it = message_states.find(cmsg.getAddress());
       if (state_it == message_states.end()) {
