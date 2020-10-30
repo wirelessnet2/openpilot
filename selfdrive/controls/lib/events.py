@@ -410,18 +410,42 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
 
   EventName.manualRestart: {
     ET.WARNING: Alert(
+      "TAKE CONTROL",
+      "Resume Driving Manually",
+      AlertStatus.userPrompt, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
+  },
+
+  EventName.manualSteeringRequired: {
+    ET.WARNING: Alert(
       "STEERING REQUIRED: AutoSteer OFF",
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
   },
 
-  EventName.manualSteeringRequired: {
+  EventName.acceleratorDisabled: {
     ET.WARNING: Alert(
-      "TAKE CONTROL",
-      "Resume Driving Manually",
-      AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
+      "OpenPilot Accel DISABLED",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+  },
+
+  EventName.lkasOnly: {
+    ET.WARNING: Alert(
+      "OpenPilot Accel and Brake DISABLED",
+      "",
+      AlertStatus.userPrompt, AlertSize.small,
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+  },
+
+  EventName.longPreEnable: {
+    ET.WARNING: Alert(
+      "OpenPilot Accel and Brake DISABLED",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
   },
 
   EventName.resumeRequired: {
