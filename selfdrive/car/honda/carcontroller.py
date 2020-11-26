@@ -76,7 +76,7 @@ HUDData = namedtuple("HUDData",
 
 class CarControllerParams():
   def __init__(self, CP):
-      self.BRAKE_MAX = 1024//4
+      self.BRAKE_MAX = 0x1E0 #Clarity: What is this magic value? -wirelessnet2
       self.STEER_MAX = CP.lateralParams.torqueBP[-1]
       # mirror of list (assuming first item is zero) for interp of signed request values
       assert(CP.lateralParams.torqueBP[0] == 0)
@@ -165,7 +165,7 @@ class CarController():
     else:
       # Send gas and brake commands.
       if (frame % 2) == 0:
-        idx = frame // 2
+        idx = (frame / 2) % 4 #Clarity: Why do we need this? -wirelessnet2
         ts = frame * DT_CTRL
         if CS.CP.carFingerprint in HONDA_BOSCH:
           pass # TODO: implement
@@ -173,7 +173,7 @@ class CarController():
           apply_gas = clip(actuators.gas, 0., 1.)
           apply_brake = int(clip(self.brake_last * P.BRAKE_MAX, 0, P.BRAKE_MAX - 1))
           pump_on, self.last_pump_ts = brake_pump_hysteresis(apply_brake, self.apply_brake_last, self.last_pump_ts, ts)
-          can_sends.append(hondacan.create_brake_command(self.packer, apply_brake, pump_on,
+          can_sends.extend(hondacan.create_brake_command(self.packer, apply_brake, #Clarity: We don't use comma's brake pump algo because it casues jerky braking on Clarity. -wirelessnet2
             pcm_override, pcm_cancel_cmd, hud.fcw, idx, CS.CP.carFingerprint, CS.stock_brake))
           self.apply_brake_last = apply_brake
 
@@ -181,5 +181,12 @@ class CarController():
             # send exactly zero if apply_gas is zero. Interceptor will send the max between read value and apply_gas.
             # This prevents unexpected pedal range rescaling
             can_sends.append(create_gas_command(self.packer, apply_gas, idx))
+
+     #Clarity: This allows us to manually drive the radar since we don't have a factory ADAS camera to do so. -wirelessnet2
+      # radar at 20Hz, but these msgs need to be sent at 50Hz on ilx (seems like an Acura bug)
+      radar_send_step = 5
+  #    if (frame % radar_send_step) == 0:
+      idx = (frame/radar_send_step) % 4
+      can_sends.extend(hondacan.create_radar_commands(self.packer, CS.vEgoRawKph, idx))
 
     return can_sends
