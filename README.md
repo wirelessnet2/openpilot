@@ -1,3 +1,28 @@
+Welcome to wirelessnet2's Honda Clarity OpenPilot Fork!
+
+[![](https://i.imgur.com/g20s8am.png)](#)
+
+This is the Clarity_0.8_Plus branch, which is built upon the Clarity_0.8 branch. The Plus branch adds some goodies not normally found in stock OpenPilot.
+The additions on top of stock OpenPilot are added in [Modules and Packages](https://github.com/wirelessnet2/openpilot/commits/Clarity_0.8_Plus). This makes the porting process to future OpenPilot versions much easier. Here's an overview of those modular code blocks:
+
+* Base Package: This contains only the most essential modifications to stock OpenPilot to allow the code to run on the Clarity. 
+
+* EPS FW Mod Package: This package contains all of the necessary code modifications to support Clarities with modified EPS Firmwares. It adds Firmware-Based Fingerprinting Support
+for all comma Pandas, including White and Grey Pandas. This will allow OpenPilot to automatically detect modded EPS FWs. It also adds Dynamic Steering Ratios to compensate for the VGR steering racks in modern cars, and finally it includes the proper tuning values for 2x and 3x Torque Mods on Clarity.
+
+* LKAS Disable Module: This module adds support for the LKAS button on the steering wheel. When the button is pressed, OpenPilot will stop steering. When pressed again, OpenPilot will resume steering. This is useful if you want to manually control the wheel to avoid an object or steer a turn yourself. The status of the steering toggle can be seen on the car's instrument cluster: If the lane lines in the Driver Assistance cluster are off, then steering is disabled. If the lines are solid then OpenPilot is currently steering, and if the lines are dashed, then OpenPilot will begin steering upon the next engage. When the car is turned on, it will always default to the dashed lane lines.
+
+* Enhancements Package: This package brings lots of Quality-of-Life improvements to the Clarity fork. It fully disables automatic updates, fixes some errors that show up when the car is turned on or off, improves braking smoothness, boosts acceleration limits when not following a lead car, makes the startup and torque alerts expire more quickly, reduces the Assisted Lane Change speed to 30mph, and raises the maximum temperature limit of the EON/comma two.
+
+* Following Distance Selector Module: This module adds support for the following distance selector button on the steering wheel. It allows for four following distance settings: 
+0.9 seconds, 1.3 seconds, 1.8 seconds, and 2.3 seconds for one, two, three, and four bars respectively. When traveling above 50mph (Highway Speeds), the following distances automatically become extended slightly, becoming 1.2, 1.5, 1.9, and 2.3 seconds for one, two, three, and four bars respectively. The status of the Following Distance Selector can be seen on the car's instrument cluster: The number of bars between the lane lines and below the car show the currently selected setting. Pressing the Following Distance Selector button will increment the setting by one, and will reset the setting to 1 bar if it is currently at 4 bars. The "bar" setting resets on each startup of the car, where it will default to two bars.
+
+* Dev UI Module: This module adds the Dev UI, which displays lots of useful information for the NERDS. Most Clarity owners are super smart awesome nerds, so I've left this in. The displayed elements include: [Radar: Lead Car Relative Distance and Relative Speed], [Steering: Real Steering Angle, OpenPilot Desired Steering Angle, EPS Motor Torque], [Device: CPU Temperature, CPU Utilization], [GPS: GPS Precision, GPS Number of Connected Satellites, Altitude], and [Car: Engine RPM, Acceleration, Brakelight Status]. This module also includes the Screen Recorder: If the car is traveling above 8mph and the user has pressed the REC button (bottom right of screen), a recording of the screen will be saved to /sdcard/videos. This also records the UI elements (such as the Dev UI information). This feature can be used as a dashcam, to make cool videos, etc...
+
+* Coast/Pass Mode Module: If OpenPilot is engaged and either of the regen paddles on the steering wheel are pulled, OpenPilot will stop accelerating but will continue to brake and steer. This is useful if you know you will have to stop (for example a red light or stop sign) but don't want to disengage. With thise mode you can allow the car to regenerate electricity into the battery while it continues to steer and brake for cars in front of you. While in coast mode, if the user depresses the gas pedal, the system will stop accelerating AND braking. This mode is useful for passing a slower vehicle: OpenPilot can continue to steer (and assist with lane changes) while the user can accelerate independently of OpenPilot. Once Pass mode is activated, OpenPilot will not brake until it is fully re-engaged. Simply press the RESUME button on the steering wheel to fully re-engage OpenPilot. Also please note that after a regen paddle has been pulled and OpenPilot enters Coast/Pass mode, it will NO LONGER disengage on the gas pedal. However, the Brake Pedal, the Main Button, and the Cancel Button will ALWAYS disengage OpenPilot.
+
+=======================
+
 [![](https://i.imgur.com/UelUjKAh.png)](#)
 
 Table of Contents
