@@ -122,6 +122,7 @@ class Controls:
     self.last_functional_fan_frame = 0
     self.events_prev = []
     self.current_alert_types = [ET.PERMANENT]
+    self.epsAlertDisplayed = False
 
     self.sm['liveCalibration'].calStatus = Calibration.CALIBRATED
     self.sm['thermal'].freeSpace = 1.
@@ -234,6 +235,9 @@ class Controls:
       self.events.add(EventName.fcw)
     if not self.sm.alive['frontFrame'] and (self.sm.frame > 5 / DT_CTRL) and not SIMULATION:
       self.events.add(EventName.cameraMalfunction)
+    if not self.CP.epsFound and not self.epsAlertDisplayed:
+      self.events.add(EventName.epsNotFound)
+      self.epsAlertDisplayed = True
 
     if self.sm['model'].frameDropPerc > 20 and not SIMULATION:
       self.events.add(EventName.modeldLagging)
