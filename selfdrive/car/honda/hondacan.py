@@ -1,5 +1,6 @@
 from selfdrive.config import Conversions as CV
 from selfdrive.car.honda.values import HONDA_BOSCH
+from common.params import Params
 
 # CAN bus layout with relay
 # 0 = ACC-CAN - radar side
@@ -115,6 +116,12 @@ def create_ui_commands(packer, pcm_speed, hud, car_fingerprint, is_metric, idx, 
   radar_disabled = car_fingerprint in HONDA_BOSCH and openpilot_longitudinal_control
   bus_lkas = get_lkas_cmd_bus(car_fingerprint, radar_disabled)
 
+  is_eon_metric = Params().get("IsMetric", encoding='utf8') == "1"
+  if is_eon_metric:
+    speed_units = 2
+  else:
+    speed_units = 3
+
   if openpilot_longitudinal_control:
     if car_fingerprint in HONDA_BOSCH:
       acc_hud_values = {
@@ -129,20 +136,21 @@ def create_ui_commands(packer, pcm_speed, hud, car_fingerprint, is_metric, idx, 
       }
     else:
       acc_hud_values = {
-        'PCM_SPEED': pcm_speed * CV.MS_TO_KPH,
-        'PCM_GAS': hud.pcm_accel,
-        'CRUISE_SPEED': hud.v_cruise,
-        'ENABLE_MINI_CAR': 1,
-        'HUD_LEAD': hud.car,
-        'HUD_DISTANCE': 3,    # max distance setting on display
-        'IMPERIAL_UNIT': int(not is_metric),
-        'SET_ME_X01_2': 1,
-        'SET_ME_X01': 1,
-        "FCM_OFF": 0, #CLarity: This call on stock_hud[] and causes a crash. -wirelessnet2
-        "FCM_OFF_2": 0, #CLarity: This call on stock_hud[] and causes a crash. -wirelessnet2
-        "FCM_PROBLEM": 0, #CLarity: This call on stock_hud[] and causes a crash. -wirelessnet2
-        "ICONS": 0, #CLarity: This call on stock_hud[] and causes a crash. -wirelessnet2
-      }
+      'PCM_SPEED': pcm_speed * CV.MS_TO_KPH,
+      'PCM_GAS': hud.pcm_accel,
+      'CRUISE_SPEED': hud.v_cruise,
+      'ENABLE_MINI_CAR': 1,
+      'HUD_LEAD': hud.car,
+      'HUD_DISTANCE_3': 1,  
+      'HUD_DISTANCE': hud.dist_lines,
+      'IMPERIAL_UNIT': speed_units,
+      'SET_ME_X01_2': 1,
+      'SET_ME_X01': 1,
+      "FCM_OFF": 0, #CLarity: This call on stock_hud[] and causes a crash. -wirelessnet2
+      "FCM_OFF_2": 0, #CLarity: This call on stock_hud[] and causes a crash. -wirelessnet2
+      "FCM_PROBLEM": 0, #CLarity: This call on stock_hud[] and causes a crash. -wirelessnet2
+      "ICONS": 0, #CLarity: This call on stock_hud[] and causes a crash. -wirelessnet2
+    }
     commands.append(packer.make_can_msg("ACC_HUD", bus_pt, acc_hud_values, idx))
 
   lkas_hud_values = {
