@@ -5,7 +5,7 @@ from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from selfdrive.config import Conversions as CV
 from selfdrive.car.interfaces import CarStateBase
-from selfdrive.car.honda.values import CAR, DBC, STEER_THRESHOLD, SPEED_FACTOR, HONDA_BOSCH
+from selfdrive.car.honda.values import CAR, DBC, STEER_THRESHOLD, SPEED_FACTOR, HONDA_BOSCH, CruiseButtons
 
 def calc_cruise_offset(offset, speed):
   # euristic formula so that speed is controlled to ~ 0.3m/s below pid_speed
@@ -174,6 +174,8 @@ class CarState(CarStateBase):
     self.steer_status_values = defaultdict(lambda: "UNKNOWN", can_define.dv["STEER_STATUS"]["STEER_STATUS"])
 
     self.lkMode = True
+    self.brakeToggle = True
+    self.gasToggle = True
     self.user_gas, self.user_gas_pressed = 0., 0
     self.brake_switch_prev = 0
     self.brake_switch_ts = 0
@@ -184,6 +186,10 @@ class CarState(CarStateBase):
     self.read_distance_lines_prev = 4
     self.lead_distance = 255
     self.engineRPM = 0
+    self.gas_has_been_pressed_since_cruise_off = False
+    self.pcm_acc_status_prev = False
+    self.openpilotEngagedWithGasDepressed = False
+    self.preEnableAlert = False
 
   def update(self, cp, cp_body): #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
     ret = car.CarState.new_message()
@@ -333,11 +339,105 @@ class CarState(CarStateBase):
         else:
           self.lkMode = True
 
+    ButtonType = car.CarState.ButtonEvent.Type
+    buttonEvents = []
+
+    if self.cruise_buttons != self.prev_cruise_buttons: #This code is stolen from interface.py: not sure if this is efficient. -wirelessnet2
+      be = car.CarState.ButtonEvent.new_message()
+      be.type = ButtonType.unknown
+      if self.cruise_buttons != 0:
+        be.pressed = True
+        but = self.cruise_buttons
+      else:
+        be.pressed = False
+        but = self.prev_cruise_buttons
+      if but == CruiseButtons.RES_ACCEL:
+        be.type = ButtonType.accelCruise
+      elif but == CruiseButtons.DECEL_SET:
+        be.type = ButtonType.decelCruise
+      elif but == CruiseButtons.CANCEL:
+        be.type = ButtonType.cancel
+      elif but == CruiseButtons.MAIN:
+        be.type = ButtonType.altButton3
+      buttonEvents.append(be)
+
     self.prev_cruise_setting = self.cruise_setting
+
+    if self.cruise_setting != self.prev_cruise_setting:
+      be = car.CarState.ButtonEvent.new_message()
+      be.type = ButtonType.unknown
+      if self.cruise_setting != 0:
+        be.pressed = True
+        but = self.cruise_setting
+      else:
+        be.pressed = False
+        but = self.prev_cruise_setting
+      if but == 1:
+        be.type = ButtonType.altButton1
+      # TODO: more buttons?
+      buttonEvents.append(be)
+
+
+    enable_pressed = False
+    for b in buttonEvents:
+
+      # do enable on both accel and decel buttons
+      if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and not b.pressed:
+        enable_pressed = True
+
+      if (b.type == "cancel" and b.pressed):
+        self.gasToggle = True
+        self.brakeToggle = True
+        self.openpilotEngagedWithGasDepressed = False
+        self.gas_has_been_pressed_since_cruise_off = False
+        self.preEnableAlert = False
+
+    if ret.brakePressed or not main_on:
+      self.gasToggle = True
+      self.brakeToggle = True
+      self.openpilotEngagedWithGasDepressed = False
+      self.gas_has_been_pressed_since_cruise_off = False
+      self.preEnableAlert = False
+
     self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
     self.read_distance_lines = self.trMode + 1
     if self.read_distance_lines != self.read_distance_lines_prev:
       self.read_distance_lines_prev = self.read_distance_lines
+
+    if self.pedal_gas > 0:
+      if ret.cruiseState.enabled != self.pcm_acc_status_prev:
+        if ret.cruiseState.enabled == True: #pcm_acc_status = 1 is engaged. -wirelessnet2
+          self.openpilotEngagedWithGasDepressed = True
+
+    if ret.cruiseState.enabled == False:
+      self.openpilotEngagedWithGasDepressed = False
+
+    if not ret.cruiseState.enabled and self.pedal_gas > 0:
+      self.gas_has_been_pressed_since_cruise_off = True
+
+    if ret.cruiseState.enabled and self.openpilotEngagedWithGasDepressed:
+      self.gas_has_been_pressed_since_cruise_off = False
+      self.openpilotEngagedWithGasDepressed = False
+
+    if enable_pressed:
+      self.gas_has_been_pressed_since_cruise_off = False
+
+    if not ret.cruiseState.enabled and self.gas_has_been_pressed_since_cruise_off:
+      self.brakeToggle = False
+      self.gasToggle = False
+
+    if not self.brakeToggle and not self.gasToggle and self.pedal_gas > 0:
+      if enable_pressed:
+        self.preEnableAlert = True
+
+    if ret.cruiseState.enabled and self.pedal_gas == 0:
+      self.brakeToggle = True
+      self.gasToggle = True
+      self.preEnableAlert = False
+
+    self.pcm_acc_status_prev = ret.cruiseState.enabled
+    ret.passMode = not self.brakeToggle
+
 
     # TODO: discover the CAN msg that has the imperial unit bit for all other cars
     self.is_metric = not cp.vl["HUD_SETTING"]['IMPERIAL_UNIT'] if self.CP.carFingerprint in (CAR.CIVIC) else False
