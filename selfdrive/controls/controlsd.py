@@ -399,7 +399,7 @@ class Controls:
       left_deviation = actuators.steer > 0 and path_plan.dPoly[3] > 0.1
       right_deviation = actuators.steer < 0 and path_plan.dPoly[3] < -0.1
 
-      if left_deviation or right_deviation:
+      if (left_deviation or right_deviation) and CS.lkMode:
         self.events.add(EventName.steerSaturated)
 
     return actuators, v_acc_sol, a_acc_sol, lac_log

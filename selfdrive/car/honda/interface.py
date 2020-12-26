@@ -491,6 +491,7 @@ class CarInterface(CarInterfaceBase):
     ret.brakeLights = bool(self.CS.brake_switch or
                            c.actuators.brake > brakelights_threshold)
 
+    ret.lkMode = self.CS.lkMode
     buttonEvents = []
 
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
