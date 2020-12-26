@@ -493,6 +493,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.readdistancelines = self.CS.read_distance_lines
     ret.lkMode = self.CS.lkMode
+    ret.engineRPM = self.CS.engineRPM
     buttonEvents = []
 
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
