@@ -100,6 +100,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     deviceFalling @90;
     fanMalfunction @91;
     cameraMalfunction @92;
+    epsNotFound @94;
 
     startupOneplus @82;
 
@@ -349,6 +350,7 @@ struct CarControl {
 struct CarParams {
   carName @0 :Text;
   carFingerprint @1 :Text;
+  epsFound @55 :Bool;
 
   enableGasInterceptor @2 :Bool;
   enableCruise @3 :Bool;
@@ -375,6 +377,7 @@ struct CarParams {
   centerToFront @19 :Float32;   # [m] GC distance to front axle
   steerRatio @20 :Float32;       # [] ratio between front wheels and steering wheel angles
   steerRatioRear @21 :Float32;  # [] rear steering ratio wrt front steering (usually 0)
+  steerRatioV @54 :Float32;       #Rate at which steerRatio falls as abs(steerAngle) increases for VGR Steering Racks -wirelessnet2
 
   # things we can derive
   rotationalInertia @22 :Float32;    # [kg*m2] body rotational inertia

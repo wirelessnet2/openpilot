@@ -98,6 +98,10 @@ class PathPlanner():
 
     self.LP.parse_model(sm['model'])
 
+    #Dynamic Steer Ratio
+
+    self.adjustedSteerRatio = VM.sR - CP.steerRatioV * abs(angle_steers)
+
     # Lane change logic
     one_blinker = sm['carState'].leftBlinker != sm['carState'].rightBlinker
     below_lane_change_speed = v_ego < LANE_CHANGE_SPEED_MIN
@@ -166,7 +170,7 @@ class PathPlanner():
     self.LP.update_d_poly(v_ego)
 
     # account for actuation delay
-    self.cur_state = calc_states_after_delay(self.cur_state, v_ego, angle_steers - angle_offset, curvature_factor, VM.sR, CP.steerActuatorDelay)
+    self.cur_state = calc_states_after_delay(self.cur_state, v_ego, angle_steers - angle_offset, curvature_factor, self.adjustedSteerRatio, CP.steerActuatorDelay)
 
     v_ego_mpc = max(v_ego, 5.0)  # avoid mpc roughness due to low speed
     self.libmpc.run_mpc(self.cur_state, self.mpc_solution,
@@ -176,21 +180,21 @@ class PathPlanner():
     # reset to current steer angle if not active or overriding
     if active:
       delta_desired = self.mpc_solution[0].delta[1]
-      rate_desired = math.degrees(self.mpc_solution[0].rate[0] * VM.sR)
+      rate_desired = math.degrees(self.mpc_solution[0].rate[0] * self.adjustedSteerRatio)
     else:
-      delta_desired = math.radians(angle_steers - angle_offset) / VM.sR
+      delta_desired = math.radians(angle_steers - angle_offset) / self.adjustedSteerRatio
       rate_desired = 0.0
 
     self.cur_state[0].delta = delta_desired
 
-    self.angle_steers_des_mpc = float(math.degrees(delta_desired * VM.sR) + angle_offset)
+    self.angle_steers_des_mpc = float(math.degrees(delta_desired * self.adjustedSteerRatio) + angle_offset)
 
     #  Check for infeasable MPC solution
     mpc_nans = any(math.isnan(x) for x in self.mpc_solution[0].delta)
     t = sec_since_boot()
     if mpc_nans:
       self.libmpc.init(MPC_COST_LAT.PATH, MPC_COST_LAT.LANE, MPC_COST_LAT.HEADING, CP.steerRateCost)
-      self.cur_state[0].delta = math.radians(angle_steers - angle_offset) / VM.sR
+      self.cur_state[0].delta = math.radians(angle_steers - angle_offset) / self.adjustedSteerRatio
 
       if t > self.last_cloudlog_t + 5.0:
         self.last_cloudlog_t = t

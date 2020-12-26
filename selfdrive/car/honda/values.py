@@ -155,6 +155,11 @@ for c in FINGERPRINTS:
 
 # TODO: Figure out what is relevant
 FW_VERSIONS = {
+  CAR.CLARITY: {
+    (Ecu.vsa, 0x18da28f1, None): [b'57114-TRW-A020\x00\x00'],
+    (Ecu.eps, 0x18da30f1, None): [b'39990-TRW-A020\x00\x00'],
+    (Ecu.srs, 0x18da53f1, None): [b'77959-TRW-A210\x00\x00'],
+  },
   CAR.ACCORD: {
     (Ecu.programmedFuelInjection, 0x18da10f1, None): [
       b'37805-6A0-A640\x00\x00',
