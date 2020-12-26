@@ -102,6 +102,9 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     cameraMalfunction @92;
     epsNotFound @94;
     manualSteeringRequired @95;
+    acceleratorDisabled @96;
+    lkasOnly @97;
+    longPreEnable @98;
 
     startupOneplus @82;
 
@@ -183,6 +186,8 @@ struct CarState {
   lkMode @37 :Bool;
   readdistancelines @38 :Int16;
   engineRPM @39 :Float32;
+  brakeToggle @40 :Bool;
+  passMode @41 :Bool;
 
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
