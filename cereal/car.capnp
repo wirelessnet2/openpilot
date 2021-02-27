@@ -100,6 +100,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     cameraMalfunction @92;
     gpsMalfunction @94;
     epsNotFound @96;
+    manualSteeringRequired @97;
     startupOneplus @82;
     processNotRunning @95;
 
@@ -179,6 +180,8 @@ struct CarState {
 
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
+
+  lkMode @37 :Bool;
 
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
