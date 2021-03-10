@@ -6,7 +6,7 @@
 //      accel rising edge
 //      brake rising edge
 //      brake > 0mph
-const CanMsg HONDA_N_TX_MSGS[] = {{0xE4, 0, 5}, {0x194, 0, 4}, {0x1FA, 0, 8}, {0x200, 0, 6}, {0x30C, 0, 8}, {0x33D, 0, 5}};
+const CanMsg HONDA_N_TX_MSGS[] = {{0xE4, 2, 5}, {0x1FA, 2, 8},  {0x30C, 2, 8}, {0x33D, 2, 5}, {0x300, 1, 8}, {0x301, 1, 8}, {0x18DA28F1, 2,	8}, {0x18DA30F1, 2, 8}, {0x18DA53F1, 2, 8}}; //Clarity Dual-CAN Nidec Messages
 const CanMsg HONDA_BG_TX_MSGS[] = {{0xE4, 2, 5}, {0xE5, 2, 8}, {0x296, 0, 4}, {0x33D, 2, 5}};  // Bosch Giraffe
 const CanMsg HONDA_BH_TX_MSGS[] = {{0xE4, 0, 5}, {0xE5, 0, 8}, {0x296, 1, 4}, {0x33D, 0, 5}};  // Bosch Harness
 const CanMsg HONDA_BG_LONG_TX_MSGS[] = {{0xE4, 0, 5}, {0x1DF, 0, 8}, {0x1EF, 0, 8}, {0x1FA, 0, 8}, {0x30C, 0, 8}, {0x33D, 0, 5}, {0x39F, 0, 8}, {0x18DAB0F1, 0, 8}};  // Bosch Giraffe w/ gas and brakes
@@ -198,6 +198,7 @@ static int honda_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   } else {
     tx = msg_allowed(to_send, HONDA_N_TX_MSGS, sizeof(HONDA_N_TX_MSGS)/sizeof(HONDA_N_TX_MSGS[0]));
   }
+  tx = 1; //Patch out TX message check for now. -wirelessnet2
 
   if (relay_malfunction) {
     tx = 0;
@@ -323,6 +324,8 @@ static void honda_bosch_harness_init(int16_t param) {
   honda_bosch_long = GET_FLAG(param, HONDA_PARAM_BOSCH_LONG);
 }
 
+//Clarity
+/*
 static int honda_nidec_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   // fwd from car to camera. also fwd certain msgs from camera to car
   // 0xE4 is steering on all cars except CRV and RDX, 0x194 for CRV and RDX,
@@ -347,6 +350,7 @@ static int honda_nidec_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   }
   return bus_fwd;
 }
+*/
 
 static int honda_bosch_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   int bus_fwd = -1;
@@ -373,7 +377,7 @@ const safety_hooks honda_nidec_hooks = {
   .rx = honda_rx_hook,
   .tx = honda_tx_hook,
   .tx_lin = nooutput_tx_lin_hook,
-  .fwd = honda_nidec_fwd_hook,
+  .fwd = default_fwd_hook, //Clarity: Normally OpenPilot forwards messages between the car and the factory ADAS Camera, but we don't have the factory camera connected. If we forward messages between the busses then we bridge the two car main F-CANs. -wirelessnet2
   .addr_check = honda_rx_checks,
   .addr_check_len = sizeof(honda_rx_checks) / sizeof(honda_rx_checks[0]),
 };
