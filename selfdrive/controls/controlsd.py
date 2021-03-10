@@ -125,6 +125,7 @@ class Controls:
     self.events_prev = []
     self.current_alert_types = [ET.PERMANENT]
     self.logged_comm_issue = False
+    self.epsAlertDisplayed = False
 
     self.sm['liveCalibration'].calStatus = Calibration.CALIBRATED
     self.sm['deviceState'].freeSpacePercent = 100
@@ -231,6 +232,9 @@ class Controls:
       self.events.add(EventName.relayMalfunction)
     if self.sm['longitudinalPlan'].fcw:
       self.events.add(EventName.fcw)
+    if not self.CP.Found and not self.epsAlertDisplayed:
+      self.events.add(EventName.epsNotFound)
+      self.epsAlertDisplayed = True
 
     # TODO: fix simulator
     if not SIMULATION:

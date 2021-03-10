@@ -99,6 +99,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     fanMalfunction @91;
     cameraMalfunction @92;
     gpsMalfunction @94;
+    epsNotFound @96;
     startupOneplus @82;
     processNotRunning @95;
 
@@ -350,6 +351,7 @@ struct CarControl {
 struct CarParams {
   carName @0 :Text;
   carFingerprint @1 :Text;
+  epsFound @55 :Bool;
 
   enableGasInterceptor @2 :Bool;
   enableCruise @3 :Bool;
