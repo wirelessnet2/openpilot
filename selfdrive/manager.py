@@ -173,7 +173,7 @@ managed_processes = {
   "camerad": ("selfdrive/camerad", ["./camerad"]),
   "sensord": ("selfdrive/sensord", ["./sensord"]),
   "clocksd": ("selfdrive/clocksd", ["./clocksd"]),
-  "updated": "selfdrive.updated",
+  #"updated": "selfdrive.updated", #Don't let the updater run. -wirelessnet2
   "dmonitoringmodeld": ("selfdrive/modeld", ["./dmonitoringmodeld"]),
   "modeld": ("selfdrive/modeld", ["./modeld"]),
   "rtshield": "selfdrive.rtshield",
@@ -208,7 +208,7 @@ persistent_processes = [
 
 if not PC:
   persistent_processes += [
-    'updated',
+    #'updated', #Don't let the updater run. -wirelessnet2
     'tombstoned',
   ]
 
