@@ -21,6 +21,7 @@
 #include "qt_window.hpp"
 #include "widgets/drive_stats.hpp"
 #include "widgets/setup.hpp"
+#include "dashcam.h"
 
 #define BACKLIGHT_DT 0.25
 #define BACKLIGHT_TS 2.00
@@ -63,8 +64,13 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
   }
 
   // Handle sidebar collapsing
-  if (ui_state->scene.started && (e->x() >= ui_state->viz_rect.x - bdr_s)) {
+  if (ui_state->scene.started && (e->x() >= ui_state->viz_rect.x - bdr_s) && !(e->globalX() >= 1660 && e->globalY() >= 885)) {
     ui_state->sidebar_collapsed = !ui_state->sidebar_collapsed;
+  }
+
+  //Handle Dashcam button events
+  if (ui_state->scene.started) {
+    dashcam(ui_state, e->globalX(), e->globalY());
   }
 }
 
@@ -219,6 +225,10 @@ static void handle_display_state(UIState* s, bool user_input) {
     s->awake = should_wake;
     Hardware::set_display_power(s->awake);
     LOGD("setting display power %d", s->awake);
+  }
+
+  if (s->awake) {
+    screen_draw_button(s);
   }
 }
 
