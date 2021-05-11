@@ -318,6 +318,14 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
   },
 
+  EventName.epsNotFound: {
+    ET.PERMANENT: Alert(
+      "EPS FW NOT FOUND",
+      "Reboot the Car: 1x Torque Applied",
+      AlertStatus.userPrompt, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., 10.),
+  },
+
   # ********** events only containing alerts that display while engaged **********
 
   EventName.gasPressed: {
