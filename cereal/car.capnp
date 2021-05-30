@@ -103,6 +103,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     processNotRunning @95;
     dashcamMode @96;
     controlsInitializing @98;
+    epsNotFound @99;
 
     radarCanErrorDEPRECATED @15;
     radarCommIssueDEPRECATED @67;
@@ -354,6 +355,7 @@ struct CarParams {
   carName @0 :Text;
   carFingerprint @1 :Text;
   fuzzyFingerprint @55 :Bool;
+  epsFound @57 :Bool;
 
   enableGasInterceptor @2 :Bool;
   enableCruise @3 :Bool;

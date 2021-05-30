@@ -134,6 +134,7 @@ class Controls:
     self.events_prev = []
     self.current_alert_types = [ET.PERMANENT]
     self.logged_comm_issue = False
+    self.epsAlertDisplayed = False
 
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
@@ -246,6 +247,9 @@ class Controls:
       self.events.add(EventName.relayMalfunction)
     if self.sm['longitudinalPlan'].fcw:
       self.events.add(EventName.fcw)
+    if not self.CP.epsFound and not self.epsAlertDisplayed:
+      self.events.add(EventName.epsNotFound)
+      self.epsAlertDisplayed = True
 
     # TODO: fix simulator
     if not SIMULATION:
