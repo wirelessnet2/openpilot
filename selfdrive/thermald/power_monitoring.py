@@ -19,7 +19,7 @@ CAR_CHARGING_RATE_W = 45
 
 VBATT_PAUSE_CHARGING = 11.0           # Lower limit on the LPF car battery voltage
 VBATT_INSTANT_PAUSE_CHARGING = 7.0    # Lower limit on the instant car battery voltage measurements to avoid triggering on instant power loss
-MAX_TIME_OFFROAD_S = 30*3600
+MAX_TIME_OFFROAD_S = 168*3600
 
 def panda_current_to_actual_current(panda_current):
   # From white/grey panda schematic
@@ -175,7 +175,7 @@ class PowerMonitoring:
     disable_charging = False
     disable_charging |= (now - offroad_timestamp) > MAX_TIME_OFFROAD_S
     disable_charging |= (self.car_voltage_mV < (VBATT_PAUSE_CHARGING * 1e3)) and (self.car_voltage_instant_mV > (VBATT_INSTANT_PAUSE_CHARGING * 1e3))
-    disable_charging |= (self.car_battery_capacity_uWh <= 0)
+    #disable_charging |= (self.car_battery_capacity_uWh <= 0)
     disable_charging &= (not pandaState.pandaState.ignitionLine and not pandaState.pandaState.ignitionCan)
     disable_charging &= (not self.params.get_bool("DisablePowerDown"))
     disable_charging |= self.params.get_bool("ForcePowerDown")
