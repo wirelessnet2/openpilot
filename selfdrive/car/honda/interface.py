@@ -488,6 +488,7 @@ class CarInterface(CarInterfaceBase):
     ret.canValid = self.cp.can_valid and (self.cp_body is None or self.cp_body.can_valid) #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
     ret.yawRate = self.VM.yaw_rate(ret.steeringAngleDeg * CV.DEG_TO_RAD, ret.vEgo)
 
+    ret.lkMode = self.CS.lkMode
     buttonEvents = []
 
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
