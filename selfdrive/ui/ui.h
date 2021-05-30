@@ -42,7 +42,8 @@ typedef struct Rect {
   }
 } Rect;
 
-const int bdr_s = 30;
+const int bdr_s = 10;
+const int bdr_is = 30;
 const int header_h = 420;
 const int footer_h = 280;
 
@@ -80,6 +81,19 @@ typedef struct UIScene {
   bool driver_view;
 
   cereal::PandaState::PandaType pandaType;
+
+  int lead_status;
+  float lead_d_rel;
+  float lead_v_rel;
+  float angleSteers;
+  bool brakeLights;
+  float angleSteersDes;
+  bool recording;
+  float gpsAccuracyUblox;
+  float altitudeUblox;
+  int engineRPM;
+  int dashcamX;
+  int dashcamY;
 
   cereal::DeviceState::Reader deviceState;
   cereal::RadarState::LeadData::Reader lead_data[2];
