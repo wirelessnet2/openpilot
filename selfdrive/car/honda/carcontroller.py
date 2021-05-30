@@ -164,7 +164,7 @@ class CarController():
           apply_gas = clip(actuators.gas, 0., 1.)
           apply_brake = int(clip(self.brake_last * P.BRAKE_MAX, 0, P.BRAKE_MAX - 1))
           pump_on, self.last_pump_ts = brake_pump_hysteresis(apply_brake, self.apply_brake_last, self.last_pump_ts, ts)
-          can_sends.append(hondacan.create_brake_command(self.packer, apply_brake, pump_on,
+          can_sends.append(hondacan.create_brake_command(self.packer, apply_brake, #Clarity: We don't use comma's brake pump algo because it casues jerky braking on Clarity. -wirelessnet2
             pcm_override, pcm_cancel_cmd, hud.fcw, idx, CS.CP.carFingerprint, CS.stock_brake))
           self.apply_brake_last = apply_brake
 
@@ -172,5 +172,12 @@ class CarController():
             # send exactly zero if apply_gas is zero. Interceptor will send the max between read value and apply_gas.
             # This prevents unexpected pedal range rescaling
             can_sends.append(create_gas_command(self.packer, apply_gas, idx))
+
+     #Clarity: This allows us to manually drive the radar since we don't have a factory ADAS camera to do so. -wirelessnet2
+      # radar at 20Hz, but these msgs need to be sent at 50Hz on ilx (seems like an Acura bug)
+      radar_send_step = 5
+  #    if (frame % radar_send_step) == 0:
+      idx = (frame/radar_send_step) % 4
+      can_sends.extend(hondacan.create_radar_commands(self.packer, CS.vEgoRawKph, idx))
 
     return can_sends
