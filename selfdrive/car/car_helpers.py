@@ -91,25 +91,46 @@ def fingerprint(logcan, sendcan):
     # Vin query only reliably works thorugh OBDII
     bus = 1
 
+    eps_found = False
+    tries = 0
+    car_fw = None
+
     cached_params = Params().get("CarParamsCache")
     if cached_params is not None:
       cached_params = car.CarParams.from_bytes(cached_params)
       if cached_params.carName == "mock":
         cached_params = None
 
-    if cached_params is not None and len(cached_params.carFw) > 0 and cached_params.carVin is not VIN_UNKNOWN:
+    if cached_params is not None and len(cached_params.carFw) > 0:
       cloudlog.warning("Using cached CarParams")
-      vin = cached_params.carVin
       car_fw = list(cached_params.carFw)
     else:
       cloudlog.warning("Getting VIN & FW versions")
-      _, vin = get_vin(logcan, sendcan, bus)
       car_fw = get_fw_versions(logcan, sendcan, bus)
+    
+    print("Printing Car FWs: First Try:")
+    print(car_fw)
+
+    for fw in car_fw:
+      if fw.ecu == "eps":
+        eps_found = True
+
+    while not eps_found and tries < 6:
+      print("EPS NOT DETECTED. RETRYING FW FINGERPRINT.")
+      car_fw = get_fw_versions(logcan, sendcan, bus)
+      for fw in car_fw:
+        if fw.ecu == "eps":
+          eps_found = True
+      tries += 1
+    
+    if not eps_found:
+      print("EPS FW NOT FOUND. THIS IS BAD.")
 
     exact_fw_match, fw_candidates = match_fw_to_car(car_fw)
   else:
-    vin = VIN_UNKNOWN
     exact_fw_match, fw_candidates, car_fw = True, set(), []
+
+  vin = VIN_UNKNOWN #Got rid of VIN collection because it's useless. -wirelessnet2
 
   cloudlog.warning("VIN %s", vin)
   Params().put("CarVin", vin)
