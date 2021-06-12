@@ -39,6 +39,7 @@ class CAR:
   CIVIC = "HONDA CIVIC 2016"
   CIVIC_BOSCH = "HONDA CIVIC (BOSCH) 2019"
   CIVIC_BOSCH_DIESEL = "HONDA CIVIC SEDAN 1.6 DIESEL 2019"
+  CLARITY = "HONDA CLARITY 2018"
   ACURA_ILX = "ACURA ILX 2016"
   CRV = "HONDA CR-V 2016"
   CRV_5G = "HONDA CR-V 2017"
@@ -82,6 +83,9 @@ FINGERPRINTS = {
   # 2017 Civic Hatchback LX
   {
     57: 3, 148: 8, 228: 5, 304: 8, 330: 8, 344: 8, 380: 8, 399: 7, 401: 8, 420: 8, 423: 2, 427: 3, 428: 8, 432: 7, 441: 5, 450: 8, 464: 8, 470: 2, 476: 7, 477: 8, 479: 8, 490: 8, 493: 5, 495: 8, 506: 8, 545: 6, 597: 8, 662: 4, 773: 7, 777: 8, 780: 8, 795: 8, 800: 8, 804: 8, 806: 8, 808: 8, 815: 8, 825: 4, 829: 5, 846: 8, 862: 8, 881: 8, 882: 4, 884: 8, 888: 8, 891: 8, 892: 8, 918: 7, 927: 8, 929: 8, 983: 8, 985: 3, 1024: 5, 1027: 5, 1029: 8, 1036: 8, 1039: 8, 1064: 7, 1092: 1, 1108: 8, 1125: 8, 1127: 2, 1296: 8, 1302: 8, 1322: 5, 1361: 5, 1365: 5, 1424: 5, 1600: 5, 1601: 8, 1633: 8
+  }],
+  CAR.CLARITY: [{
+    57: 3, 304: 8, 312: 8, 315: 7, 330: 8, 344: 8, 380: 8, 387: 8, 388: 8, 409: 8, 419: 8, 420: 8, 427: 3, 428: 8, 432: 7, 441: 5, 450: 8, 464: 8, 476: 8, 478: 3, 506: 8, 538: 5, 545: 5, 547: 6, 559: 3, 597: 8, 662: 4, 773: 7, 777: 8, 780: 8, 795: 8, 800: 8, 804: 8, 806: 8, 808: 8, 815: 8, 829: 5, 831: 5, 832: 3, 833: 8, 856: 7, 862: 8, 884: 8, 891: 8, 900: 8, 904: 8, 905: 8, 906: 4, 923: 2, 927: 8, 929: 8, 976: 8, 983: 8, 1029: 8, 1036: 8, 1070: 8, 1072: 4, 1092: 1, 1108: 8, 1113: 8, 1114: 2, 1125: 8, 1128: 8, 1129: 8, 1302: 8, 1331: 8, 1332: 5, 1341: 5
   }],
   CAR.CRV_5G: [{
     57: 3, 148: 8, 199: 4, 228: 5, 231: 5, 232: 7, 304: 8, 330: 8, 340: 8, 344: 8, 380: 8, 399: 7, 401: 8, 420: 8, 423: 2, 427: 3, 428: 8, 432: 7, 441: 5, 446: 3, 450: 8, 464: 8, 467: 2, 469: 3, 470: 2, 474: 8, 476: 7, 477: 8, 479: 8, 490: 8, 493: 5, 495: 8, 507: 1, 545: 6, 597: 8, 661: 4, 662: 4, 773: 7, 777: 8, 780: 8, 795: 8, 800: 8, 804: 8, 806: 8, 808: 8, 814: 4, 815: 8, 817: 4, 825: 4, 829: 5, 862: 8, 881: 8, 882: 4, 884: 8, 888: 8, 891: 8, 927: 8, 918: 7, 929: 8, 983: 8, 985: 3, 1024: 5, 1027: 5, 1029: 8, 1036: 8, 1039: 8, 1064: 7, 1108: 8, 1092: 1, 1115: 2, 1125: 8, 1127: 2, 1296: 8, 1302: 8, 1322: 5, 1361: 5, 1365: 5, 1424: 5, 1600: 5, 1601: 8, 1618: 5, 1633: 8, 1670: 5
@@ -1225,6 +1229,19 @@ FW_VERSIONS = {
       b'78109-TV9-A510\x00\x00',
     ],
   },
+   CAR.CLARITY: {
+    (Ecu.vsa, 0x18da28f1, None): [
+        b'57114-TRW-A010\x00\x00',
+        b'57114-TRW-A020\x00\x00',
+    ],
+    (Ecu.eps, 0x18da30f1, None): [
+        b'39990-TRW-A020\x00\x00',
+        b'39990-TRW,A020\x00\x00', #2x modified firmware
+    ],
+    (Ecu.srs, 0x18da53f1, None): [
+        b'77959-TRW-A210\x00\x00',
+    ],
+  },
 }
 
 DBC = {
@@ -1236,6 +1253,7 @@ DBC = {
   CAR.CIVIC: dbc_dict('honda_civic_touring_2016_can_generated', 'acura_ilx_2016_nidec'),
   CAR.CIVIC_BOSCH: dbc_dict('honda_civic_hatchback_ex_2017_can_generated', None),
   CAR.CIVIC_BOSCH_DIESEL: dbc_dict('honda_civic_sedan_16_diesel_2019_can_generated', None),
+  CAR.CLARITY: dbc_dict('honda_clarity_hybrid_2018_can_generated', 'acura_ilx_2016_nidec'),
   CAR.CRV: dbc_dict('honda_crv_touring_2016_can_generated', 'acura_ilx_2016_nidec'),
   CAR.CRV_5G: dbc_dict('honda_crv_ex_2017_can_generated', None, body_dbc='honda_crv_ex_2017_body_generated'),
   CAR.CRV_EU: dbc_dict('honda_crv_executive_2016_can_generated', 'acura_ilx_2016_nidec'),
@@ -1259,6 +1277,7 @@ STEER_THRESHOLD = {
   CAR.CIVIC: 1200,
   CAR.CIVIC_BOSCH: 1200,
   CAR.CIVIC_BOSCH_DIESEL: 1200,
+  CAR.CLARITY: 1200,
   CAR.CRV: 1200,
   CAR.CRV_5G: 1200,
   CAR.CRV_EU: 400,
@@ -1282,6 +1301,7 @@ SPEED_FACTOR = {
   CAR.CIVIC: 1.,
   CAR.CIVIC_BOSCH: 1.,
   CAR.CIVIC_BOSCH_DIESEL: 1.,
+  CAR.CLARITY: 1.,
   CAR.CRV: 1.025,
   CAR.CRV_5G: 1.025,
   CAR.CRV_EU: 1.025,

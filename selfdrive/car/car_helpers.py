@@ -90,7 +90,7 @@ def fingerprint(logcan, sendcan):
   fixed_fingerprint = os.environ.get('FINGERPRINT', "")
   skip_fw_query = os.environ.get('SKIP_FW_QUERY', False)
 
-  if not fixed_fingerprint and not skip_fw_query:
+  """if not fixed_fingerprint and not skip_fw_query:
     # Vin query only reliably works thorugh OBDII
     bus = 1
 
@@ -110,9 +110,9 @@ def fingerprint(logcan, sendcan):
       car_fw = get_fw_versions(logcan, sendcan, bus)
 
     exact_fw_match, fw_candidates = match_fw_to_car(car_fw)
-  else:
-    vin = VIN_UNKNOWN
-    exact_fw_match, fw_candidates, car_fw = True, set(), []
+  else:""" #Clarity: This makes the Black Panda/Uno take forever to begin sending messages upon Ignition ON due to fingerprinting waiting for VIN and ECU FWs. -wirelessnet2
+  vin = VIN_UNKNOWN
+  exact_fw_match, fw_candidates, car_fw = True, set(), []
 
   cloudlog.warning("VIN %s", vin)
   Params().put("CarVin", vin)

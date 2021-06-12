@@ -1,6 +1,6 @@
 from cereal import car
 from collections import defaultdict
-from common.numpy_fast import interp
+from common.numpy_fast import interp, clip #Clarity: Clip is needed to support create_radar_commands() in hondacan. -wirelessnet2
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from selfdrive.config import Conversions as CV
@@ -149,6 +149,17 @@ def get_can_signals(CP, gearbox_msg="GEARBOX"):
       ("EPB_STATUS", 50),
       ("GAS_PEDAL_2", 100),
     ]
+  elif CP.carFingerprint == CAR.CLARITY: #Clarity
+    signals += [("CAR_GAS", "GAS_PEDAL_2", 0),
+                ("MAIN_ON", "SCM_FEEDBACK", 0),
+                ("EPB_STATE", "EPB_STATUS", 0),
+                ("BRAKE_ERROR_1", "BRAKE_ERROR", 0),
+                ("BRAKE_ERROR_2", "BRAKE_ERROR", 0)]
+    checks += [
+      ("BRAKE_ERROR", 100),
+      ("EPB_STATUS", 50),
+      ("GAS_PEDAL_2", 100),
+    ]
   elif CP.carFingerprint == CAR.ACURA_ILX:
     signals += [("CAR_GAS", "GAS_PEDAL_2", 0),
                 ("MAIN_ON", "SCM_BUTTONS", 0)]
@@ -213,7 +224,7 @@ class CarState(CarStateBase):
     self.v_cruise_pcm_prev = 0
     self.cruise_mode = 0
 
-  def update(self, cp, cp_cam, cp_body):
+  def update(self, cp, cp_body): #Clarity: cp_cam is the CAN parser for the Factory Camera CAN. Since we've disconnected the factory camera, this is not needed. -wirelessnet2
     ret = car.CarState.new_message()
 
     # car params
@@ -249,6 +260,8 @@ class CarState(CarStateBase):
 
     if not self.CP.openpilotLongitudinalControl:
       self.brake_error = 0
+    elif self.CP.carFingerprint == CAR.CLARITY:
+      self.brake_error = cp.vl["BRAKE_ERROR"]['BRAKE_ERROR_1'] or cp.vl["BRAKE_ERROR"]['BRAKE_ERROR_2']
     else:
       self.brake_error = cp.vl["STANDSTILL"]["BRAKE_ERROR_1"] or cp.vl["STANDSTILL"]["BRAKE_ERROR_2"]
     ret.espDisabled = cp.vl["VSA_STATUS"]["ESP_DISABLED"] != 0
@@ -264,6 +277,7 @@ class CarState(CarStateBase):
     v_weight = interp(v_wheel, v_weight_bp, v_weight_v)
     ret.vEgoRaw = (1. - v_weight) * cp.vl["ENGINE_DATA"]["XMISSION_SPEED"] * CV.KPH_TO_MS * speed_factor + v_weight * v_wheel
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
+    self.vEgoRawKph = clip(int((1. - v_weight) * cp.vl["ENGINE_DATA"]['XMISSION_SPEED'] * speed_factor + v_weight * v_wheel), 0, 255) #Clarity: This supports create_radar_commands() in hondacan. -wirelessnet2
 
     ret.steeringAngleDeg = cp.vl["STEERING_SENSORS"]["STEER_ANGLE"]
     ret.steeringRateDeg = cp.vl["STEERING_SENSORS"]["STEER_ANGLE_RATE"]
@@ -276,7 +290,7 @@ class CarState(CarStateBase):
     self.brake_hold = cp.vl["VSA_STATUS"]["BRAKE_HOLD_ACTIVE"]
 
     if self.CP.carFingerprint in (CAR.CIVIC, CAR.ODYSSEY, CAR.CRV_5G, CAR.ACCORD, CAR.ACCORDH, CAR.CIVIC_BOSCH,
-                                  CAR.CIVIC_BOSCH_DIESEL, CAR.CRV_HYBRID, CAR.INSIGHT, CAR.ACURA_RDX_3G):
+                                  CAR.CIVIC_BOSCH_DIESEL, CAR.CRV_HYBRID, CAR.INSIGHT, CAR.ACURA_RDX_3G, CAR.CLARITY): #Clarity
       self.park_brake = cp.vl["EPB_STATUS"]["EPB_STATE"] != 0
       main_on = cp.vl["SCM_FEEDBACK"]["MAIN_ON"]
     elif self.CP.carFingerprint == CAR.ODYSSEY_CHN:
@@ -349,15 +363,15 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint in HONDA_BOSCH:
       ret.stockAeb = bool(cp.vl["ACC_CONTROL"]["AEB_STATUS"] and cp.vl["ACC_CONTROL"]["ACCEL_COMMAND"] < -1e-5)
     else:
-      ret.stockAeb = bool(cp_cam.vl["BRAKE_COMMAND"]["AEB_REQ_1"] and cp_cam.vl["BRAKE_COMMAND"]["COMPUTER_BRAKE"] > 1e-5)
+      ret.stockAeb = bool(0) #Clarity: Since we don't have the Factory ADAS Camera connected, we will never need these. If we leave it in, it calls on cp_cam and causes errors. -wirelessnet2
 
     if self.CP.carFingerprint in HONDA_BOSCH:
       self.stock_hud = False
       ret.stockFcw = False
     else:
-      ret.stockFcw = cp_cam.vl["BRAKE_COMMAND"]["FCW"] != 0
-      self.stock_hud = cp_cam.vl["ACC_HUD"]
-      self.stock_brake = cp_cam.vl["BRAKE_COMMAND"]
+      ret.stockFcw = bool(0) #Clarity: Since we don't have the Factory ADAS Camera connected, we will never need these. If we leave it in, it calls on cp_cam and causes errors. -wirelessnet2
+      self.stock_hud = 0 #Clarity: Since we don't have the Factory ADAS Camera connected, we will never need these. If we leave it in, it calls on cp_cam and causes errors. -wirelessnet2
+      self.stock_brake = 0 #Clarity: Since we don't have the Factory ADAS Camera connected, we will never need these. If we leave it in, it calls on cp_cam and causes errors. -wirelessnet2
 
     if self.CP.enableBsm and self.CP.carFingerprint in (CAR.CRV_5G, ):
       # BSM messages are on B-CAN, requires a panda forwarding B-CAN messages to CAN 0
