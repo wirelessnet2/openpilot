@@ -299,7 +299,7 @@ class CarState(CarStateBase):
     ret.leftBlinker = cp.vl["SCM_FEEDBACK"]["LEFT_BLINKER"] != 0
     ret.rightBlinker = cp.vl["SCM_FEEDBACK"]["RIGHT_BLINKER"] != 0
     self.brake_hold = cp.vl["VSA_STATUS"]["BRAKE_HOLD_ACTIVE"]
-        self.engineRPM = cp.vl["POWERTRAIN_DATA"]["ENGINE_RPM"]
+    self.engineRPM = cp.vl["POWERTRAIN_DATA"]["ENGINE_RPM"]
 
     if self.CP.carFingerprint in (CAR.CIVIC, CAR.ODYSSEY, CAR.CRV_5G, CAR.ACCORD, CAR.ACCORDH, CAR.CIVIC_BOSCH,
                                   CAR.CIVIC_BOSCH_DIESEL, CAR.CRV_HYBRID, CAR.INSIGHT, CAR.ACURA_RDX_3G, CAR.CLARITY): #Clarity
