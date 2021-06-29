@@ -54,6 +54,7 @@ class CAR:
   PILOT_2019 = "HONDA PILOT 2019"
   RIDGELINE = "HONDA RIDGELINE 2017"
   INSIGHT = "HONDA INSIGHT 2019"
+  CLARITY = "HONDA CLARITY 2018"
 
 # diag message that in some Nidec cars only appear with 1s freq if VIN query is performed
 DIAG_MSGS = {1600: 5, 1601: 8}
@@ -111,6 +112,9 @@ FINGERPRINTS = {
   # 2019 Pilot EX-L
   {
     57: 3, 145: 8, 228: 5, 229: 4, 308: 5, 316: 8, 339: 7, 342: 6, 344: 8, 380: 8, 392: 6, 399: 7, 411: 5, 419: 8, 420: 8, 422: 8, 425: 8, 426: 8, 427: 3, 432: 7, 464: 8, 476: 4, 490: 8, 506: 8, 512: 6, 513: 6, 542: 7, 545: 5, 546: 3, 597: 8, 660: 8, 773: 7, 777: 8, 780: 8, 795: 8, 800: 8, 804: 8, 808: 8, 817: 4, 819: 7, 821: 5, 829: 5, 871: 8, 881: 8, 882: 2, 884: 7, 891: 8, 892: 8, 923: 2, 927: 8, 929: 8, 963: 8, 965: 8, 966: 8, 967: 8, 983: 8, 985: 3, 1027: 5, 1029: 8, 1039: 8, 1064: 7, 1088: 8, 1089: 8, 1092: 1, 1108: 8, 1125: 8, 1296: 8, 1424: 5, 1445: 8, 1600: 5, 1601: 8, 1612: 5, 1613: 5, 1616: 5, 1617: 8, 1618: 5, 1623: 5, 1668: 5
+  }],
+  CAR.CLARITY: [{
+    57: 3, 148: 8, 228: 5, 304: 8, 312: 8, 315: 7, 330: 8, 344: 8, 380: 8, 387: 8, 388: 8, 399: 7, 409: 8, 419: 8, 420: 8, 427: 3, 428: 8, 432: 7, 441: 5, 450: 8, 464: 8, 476: 8, 478: 3, 490: 8, 506: 8, 531: 8, 533: 8, 538: 5, 545: 5, 547: 6, 559: 3, 597: 8, 662: 4, 773: 7, 777: 8, 780: 8, 795: 8, 800: 8, 804: 8, 806: 8, 808: 8, 815: 8, 829: 5, 831: 5, 832: 3, 833: 8, 856: 7, 862: 8, 884: 8, 891: 8, 892: 8, 900: 8, 901: 8, 904: 8, 905: 8, 906: 4, 923: 2, 927: 8, 929: 8, 976: 8, 983: 8, 985: 3, 1024: 5, 1027: 5, 1029: 8, 1036: 8, 1039: 8, 1070: 8, 1072: 4, 1092: 1, 1108: 8, 1113: 8, 1114: 2, 1125: 8, 1128: 8, 1129: 8, 1302: 8, 1322: 5, 1331: 8, 1332: 5, 1341: 5, 1361: 5, 1365: 5, 1424: 5, 1429: 5, 1600: 5, 1601: 8, 1604: 5, 1606: 5, 1607: 8, 1608: 5, 1609: 8, 1633: 8
   }],
 }
 
@@ -1225,6 +1229,36 @@ FW_VERSIONS = {
       b'78109-TV9-A510\x00\x00',
     ],
   },
+  CAR.CLARITY: {
+    (Ecu.programmedFuelInjection, 0x18da10f1, None): [
+        b'37805-5WJ-A610\x00\x00',
+    ],
+    (Ecu.shiftByWire, 0x18da0bf1, None): [
+        b'54008-TRW-A910\x00\x00',
+    ],
+    (Ecu.vsa, 0x18da28f1, None): [
+        b'57114-TRW-A010\x00\x00',
+        b'57114-TRW-A020\x00\x00',
+    ],
+    (Ecu.eps, 0x18da30f1, None): [
+        b'39990-TRW-A020\x00\x00',
+        b'39990-TRW,A020\x00\x00', #modified firmware
+    ],
+    (Ecu.srs, 0x18da53f1, None): [
+        b'77959-TRW-A210\x00\x00',
+        b'77959-TRW-A220\x00\x00',
+    ],
+    (Ecu.electricBrakeBooster, 0x18da2bf1, None): [
+        b'46114-TRW-A020\x00\x00',
+    ],
+    (Ecu.gateway, 0x18daeff1, None): [
+        b'38897-TRW-A010\x00\x00',
+    ],
+    (Ecu.combinationMeter, 0x18da60f1, None): [
+        b'78109-TRW-A020\x00\x00',
+        b'78109-TRW-A030\x00\x00',
+    ],
+  },
 }
 
 DBC = {
@@ -1248,6 +1282,7 @@ DBC = {
   CAR.PILOT_2019: dbc_dict('honda_pilot_touring_2017_can_generated', 'acura_ilx_2016_nidec'),
   CAR.RIDGELINE: dbc_dict('honda_ridgeline_black_edition_2017_can_generated', 'acura_ilx_2016_nidec'),
   CAR.INSIGHT: dbc_dict('honda_insight_ex_2019_can_generated', None),
+  CAR.CLARITY: dbc_dict('honda_clarity_hybrid_2018_can_generated', 'acura_ilx_2016_nidec'),
 }
 
 STEER_THRESHOLD = {
@@ -1271,6 +1306,7 @@ STEER_THRESHOLD = {
   CAR.PILOT_2019: 1200,
   CAR.RIDGELINE: 1200,
   CAR.INSIGHT: 1200,
+  CAR.CLARITY: 1200,
 }
 
 SPEED_FACTOR = {
@@ -1294,6 +1330,7 @@ SPEED_FACTOR = {
   CAR.PILOT_2019: 1.,
   CAR.RIDGELINE: 1.,
   CAR.INSIGHT: 1.,
+  CAR.CLARITY: 1.,
 }
 
 HONDA_BOSCH = set([CAR.ACCORD, CAR.ACCORDH, CAR.CIVIC_BOSCH, CAR.CIVIC_BOSCH_DIESEL, CAR.CRV_5G, CAR.CRV_HYBRID, CAR.INSIGHT, CAR.ACURA_RDX_3G])
