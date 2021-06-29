@@ -30,8 +30,8 @@ NetworkType = log.DeviceState.NetworkType
 NetworkStrength = log.DeviceState.NetworkStrength
 CURRENT_TAU = 15.   # 15s time constant
 CPU_TEMP_TAU = 5.   # 5s time constant
-DAYS_NO_CONNECTIVITY_MAX = 7  # do not allow to engage after a week without internet
-DAYS_NO_CONNECTIVITY_PROMPT = 4  # send an offroad prompt after 4 days with no internet
+DAYS_NO_CONNECTIVITY_MAX = 999999  # do not allow to engage after a week without internet
+DAYS_NO_CONNECTIVITY_PROMPT = 999999  # send an offroad prompt after 4 days with no internet
 DISCONNECT_TIMEOUT = 5.  # wait 5 seconds before going offroad after disconnect so you get an alert
 
 prev_offroad_states: Dict[str, Tuple[bool, Optional[str]]] = {}
@@ -114,7 +114,7 @@ def handle_fan_eon(max_cpu_temp, bat_temp, fan_speed, ignition):
 
 
 def handle_fan_uno(max_cpu_temp, bat_temp, fan_speed, ignition):
-  new_speed = int(interp(max_cpu_temp, [40.0, 80.0], [0, 80]))
+  new_speed = int(interp(max_cpu_temp, [45.0, 85.0], [0, 80]))
 
   if not ignition:
     new_speed = min(30, new_speed)
@@ -276,7 +276,7 @@ def thermald_thread():
     if max_cpu_temp > 107. or bat_temp >= 63. or (is_offroad_for_5_min and max_cpu_temp > 70.0):
       # onroad not allowed
       thermal_status = ThermalStatus.danger
-    elif max_comp_temp > 96.0 or bat_temp > 60.:
+    elif max_comp_temp > 101 or bat_temp > 60.:  # CPU throttling starts around ~90C
       # hysteresis between onroad not allowed and engage not allowed
       thermal_status = clip(thermal_status, ThermalStatus.red, ThermalStatus.danger)
     elif max_cpu_temp > 94.0:

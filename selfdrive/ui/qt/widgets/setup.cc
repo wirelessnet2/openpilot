@@ -269,7 +269,7 @@ void SetupWidget::replyFinished(const QString &response) {
 
   QJsonObject json = doc.object();
   bool is_paired = json["is_paired"].toBool();
-  bool is_prime = json["prime"].toBool();
+  bool is_prime = true;
 
   if (!is_paired) {
     mainLayout->setCurrentIndex(showQr);
