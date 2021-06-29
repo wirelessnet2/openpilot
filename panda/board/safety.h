@@ -203,7 +203,7 @@ bool addr_safety_check(CAN_FIFOMailBox_TypeDef *to_push,
 
 void generic_rx_checks(bool stock_ecu_detected) {
   // exit controls on rising edge of gas press
-  if (gas_pressed && !gas_pressed_prev && !(unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS)) {
+  if (false) { //I disabled this to allow for Pass Mode. -wirelessnet2
     controls_allowed = 0;
   }
   gas_pressed_prev = gas_pressed;
